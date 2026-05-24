@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Firebase Relay Control</title>
+    <style>
+        body {
+            text-align: center;
+        }
+
+        #btn {
+            background-color: aqua;
+            color: white;
+            font-weight: bold;
+            border-radius: 12px;
+            padding: 10px;
+            border: none;
+            cursor: pointer;
+        }
+
+        #btn:hover {
+            background-color: beige;
+            color: rgb(32, 29, 29);
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1 id="state">Relay State Loading...</h1>
+
+    <button id="btn" onclick="turnOFF()">ON</button>
+    <button id="btn" onclick="turnON()">OFF</button>
+
+    <script>
+
+        const url = "https://firstesp32project-7b0e1-default-rtdb.asia-southeast1.firebasedatabase.app/relay/state.json";
+
+        // Read current state
+        function getState() {
+
+            fetch(url)
+
+                .then(response => response.json())
+
+                .then(data => {
+
+                    document.getElementById("state").innerHTML =
+                        "Relay State = " + data;
+
+                    console.log(data);
+
+                });
+
+        }
+
+        // Set state = 1
+        function turnON() {
+
+            fetch(url, {
+
+                method: "PUT",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify(1)
+
+            })
+
+                .then(() => {
+                    getState();
+                });
+
+        }
+
+        // Set state = 0
+        function turnOFF() {
+
+            fetch(url, {
+
+                method: "PUT",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify(0)
+
+            })
+
+                .then(() => {
+                    getState();
+                });
+
+        }
+
+        // Load current state when page opens
+        getState();
+
+    </script>
+
+</body>
+
+</html>
