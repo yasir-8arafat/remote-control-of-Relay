@@ -2,62 +2,113 @@
 <html>
 
 <head>
-    <title>Firebase Relay Control</title>
+
+    <title>ESP32 3 Relay Control</title>
+
     <style>
         body {
             text-align: center;
+            font-family: Arial;
         }
 
-        #btn {
-            background-color: aqua;
-            color: white;
-            font-weight: bold;
-            border-radius: 12px;
-            padding: 10px;
-            border: none;
+        .relay {
+            border: 1px solid gray;
+            width: 300px;
+            margin: 20px auto;
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            font-size: 18px;
             cursor: pointer;
         }
 
-        #btn:hover {
-            background-color: beige;
-            color: rgb(32, 29, 29);
+        .on {
+            background: green;
+            color: white;
+        }
+
+        .off {
+            background: red;
+            color: white;
         }
     </style>
+
 </head>
 
 <body>
 
-    <h1 id="state">Relay State Loading...</h1>
+    <h1>Firebase Relay Control</h1>
 
-    <button id="btn" onclick="turnOFF()">ON</button>
-    <button id="btn" onclick="turnON()">OFF</button>
+
+    <div class="relay">
+
+        <h2 id="state1">Relay 1 : Loading...</h2>
+
+        <button class="on" onclick="setRelay(1,1)">ON</button>
+
+        <button class="off" onclick="setRelay(1,0)">OFF</button>
+
+    </div>
+
+
+
+    <div class="relay">
+
+        <h2 id="state2">Relay 2 : Loading...</h2>
+
+        <button class="on" onclick="setRelay(2,1)">ON</button>
+
+        <button class="off" onclick="setRelay(2,0)">OFF</button>
+
+    </div>
+
+
+
+    <div class="relay">
+
+        <h2 id="state3">Relay 3 : Loading...</h2>
+
+        <button class="on" onclick="setRelay(3,1)">ON</button>
+
+        <button class="off" onclick="setRelay(3,0)">OFF</button>
+
+    </div>
+
+
 
     <script>
 
-        const url = "https://firstesp32project-7b0e1-default-rtdb.asia-southeast1.firebasedatabase.app/relay/state.json";
+        const databaseURL =
+            "https://firstesp32project-7b0e1-default-rtdb.asia-southeast1.firebasedatabase.app";
 
-        // Read current state
-        function getState() {
 
-            fetch(url)
+
+        // Read relay state
+        function getRelay(relayNo) {
+
+            fetch(databaseURL + "/relay" + relayNo + "/state.json")
 
                 .then(response => response.json())
 
                 .then(data => {
 
-                    document.getElementById("state").innerHTML =
-                        "Relay State = " + data;
-
-                    console.log(data);
+                    document.getElementById("state" + relayNo).innerHTML =
+                        "Relay " + relayNo + " = " + data;
 
                 });
 
         }
 
-        // Set state = 1
-        function turnON() {
 
-            fetch(url, {
+
+        // Write relay state
+        function setRelay(relayNo, state) {
+
+            fetch(databaseURL + "/relay" + relayNo + "/state.json", {
 
                 method: "PUT",
 
@@ -65,39 +116,24 @@
                     "Content-Type": "application/json"
                 },
 
-                body: JSON.stringify(1)
+                body: JSON.stringify(state)
 
             })
 
                 .then(() => {
-                    getState();
+
+                    getRelay(relayNo);
+
                 });
 
         }
 
-        // Set state = 0
-        function turnOFF() {
 
-            fetch(url, {
 
-                method: "PUT",
-
-                headers: {
-                    "Content-Type": "application/json"
-                },
-
-                body: JSON.stringify(0)
-
-            })
-
-                .then(() => {
-                    getState();
-                });
-
-        }
-
-        // Load current state when page opens
-        getState();
+        // Load current state
+        getRelay(1);
+        getRelay(2);
+        getRelay(3);
 
     </script>
 
