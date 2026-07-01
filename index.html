@@ -1,142 +1,803 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
-
-    <title>ESP32 3 Relay Control</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ESP32 Power Monitor & Relay Control</title>
 
     <style>
+        /* ========== RESET & BASE ========== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f4f8;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* ========== HEADER ========== */
+        .header {
+            background: linear-gradient(135deg, #1a237e, #0d47a1);
+            color: white;
+            padding: 25px 30px;
+            border-radius: 16px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            box-shadow: 0 4px 20px rgba(13, 71, 161, 0.3);
+        }
+
+        .header h1 {
+            font-size: 26px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .header .status {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 8px 18px;
+            border-radius: 30px;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #4caf50;
+            display: inline-block;
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.offline {
+            background: #f44336;
+            animation: none;
+        }
+
+        .last-update {
+            font-size: 13px;
+            opacity: 0.8;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.5;
+                transform: scale(0.9);
+            }
+        }
+
+        /* ========== GRID LAYOUT ========== */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        /* ========== CARDS ========== */
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 22px 18px 18px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
             text-align: center;
-            font-family: Arial;
+            border-top: 4px solid #1a237e;
+            position: relative;
+            overflow: hidden;
         }
 
-        .relay {
-            border: 1px solid gray;
-            width: 300px;
-            margin: 20px auto;
-            padding: 15px;
-            border-radius: 10px;
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 28px rgba(0, 0, 0, 0.12);
         }
 
-        button {
-            padding: 10px 20px;
-            margin: 5px;
-            font-size: 18px;
+        .card .icon {
+            font-size: 32px;
+            margin-bottom: 6px;
+        }
+
+        .card .label {
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: #78909c;
+            font-weight: 600;
+        }
+
+        .card .value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #1a237e;
+            margin: 6px 0 2px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .card .unit {
+            font-size: 16px;
+            font-weight: 400;
+            color: #78909c;
+            margin-left: 2px;
+        }
+
+        .card .trend {
+            font-size: 12px;
+            color: #78909c;
+        }
+
+        /* ========== COLOR VARIANTS ========== */
+        .card.voltage {
+            border-top-color: #e53935;
+        }
+
+        .card.voltage .value {
+            color: #e53935;
+        }
+
+        .card.current {
+            border-top-color: #1e88e5;
+        }
+
+        .card.current .value {
+            color: #1e88e5;
+        }
+
+        .card.power {
+            border-top-color: #43a047;
+        }
+
+        .card.power .value {
+            color: #43a047;
+        }
+
+        .card.energy {
+            border-top-color: #f9a825;
+        }
+
+        .card.energy .value {
+            color: #f9a825;
+        }
+
+        .card.frequency {
+            border-top-color: #8e24aa;
+        }
+
+        .card.frequency .value {
+            color: #8e24aa;
+        }
+
+        .card.pf {
+            border-top-color: #00acc1;
+        }
+
+        .card.pf .value {
+            color: #00acc1;
+        }
+
+        /* ========== RELAY CARDS (wider) ========== */
+        .relay-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .relay-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px 22px 22px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            border-left: 5px solid #78909c;
+            transition: border-color 0.3s ease;
+        }
+
+        .relay-card.on {
+            border-left-color: #4caf50;
+        }
+
+        .relay-card.off {
+            border-left-color: #f44336;
+        }
+
+        .relay-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .relay-info .relay-label {
+            font-size: 15px;
+            font-weight: 600;
+            color: #263238;
+        }
+
+        .relay-info .relay-status {
+            font-size: 13px;
+            font-weight: 500;
+            padding: 2px 12px;
+            border-radius: 20px;
+            display: inline-block;
+            width: fit-content;
+        }
+
+        .relay-status.on {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .relay-status.off {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .relay-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .relay-buttons button {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
             cursor: pointer;
+            transition: all 0.2s ease;
         }
 
-        .on {
-            background: green;
+        .relay-buttons button:hover {
+            transform: scale(1.04);
+        }
+
+        .relay-buttons .btn-on {
+            background: #4caf50;
             color: white;
         }
 
-        .off {
-            background: red;
+        .relay-buttons .btn-on:hover {
+            background: #388e3c;
+        }
+
+        .relay-buttons .btn-off {
+            background: #f44336;
             color: white;
+        }
+
+        .relay-buttons .btn-off:hover {
+            background: #c62828;
+        }
+
+        .relay-buttons .btn-active {
+            outline: 3px solid #ffd600;
+            outline-offset: 2px;
+        }
+
+        /* ========== SECTION TITLE ========== */
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #263238;
+            margin: 30px 0 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title::after {
+            content: '';
+            flex: 1;
+            height: 2px;
+            background: linear-gradient(to right, #cfd8dc, transparent);
+        }
+
+        /* ========== RESPONSIVE ========== */
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 20px;
+            }
+
+            .header .status {
+                font-size: 12px;
+                padding: 6px 14px;
+            }
+
+            .card .value {
+                font-size: 26px;
+            }
+
+            .grid {
+                grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+                gap: 14px;
+            }
+
+            .relay-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .relay-card {
+                flex-direction: column;
+                align-items: stretch;
+                text-align: center;
+            }
+
+            .relay-buttons {
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+            }
+
+            .card {
+                padding: 14px 10px;
+            }
+
+            .card .value {
+                font-size: 20px;
+            }
+
+            .card .icon {
+                font-size: 24px;
+            }
+        }
+
+        /* ========== LOADING SKELETON ========== */
+        .value.loading {
+            color: #cfd8dc !important;
+            animation: shimmer 1.2s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.4;
+            }
+        }
+
+        /* ========== TOAST NOTIFICATION ========== */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #263238;
+            color: white;
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.4s ease;
+            z-index: 999;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast.success {
+            background: #2e7d32;
+        }
+
+        .toast.error {
+            background: #c62828;
         }
     </style>
-
 </head>
 
 <body>
+    <div class="container">
 
-    <h1>Firebase Relay Control</h1>
+        <!-- ====== HEADER ====== -->
+        <header class="header">
+            <h1>⚡ Power Monitor & Relay Control</h1>
+            <div class="status">
+                <span class="status-dot" id="statusDot"></span>
+                <span id="statusText">Connected</span>
+                <span class="last-update" id="lastUpdate">Last update: --</span>
+            </div>
+        </header>
 
+        <!-- ====== METER CARDS ====== -->
+        <div class="grid" id="meterGrid">
+            <div class="card voltage">
+                <div class="icon">⚡</div>
+                <div class="label">Voltage</div>
+                <div class="value loading" id="voltage">--</div>
+                <div class="unit">V</div>
+            </div>
 
-    <div class="relay">
+            <div class="card current">
+                <div class="icon">🔌</div>
+                <div class="label">Current</div>
+                <div class="value loading" id="current">--</div>
+                <div class="unit">A</div>
+            </div>
 
-        <h2 id="state1">Relay 1 : Loading...</h2>
+            <div class="card power">
+                <div class="icon">💡</div>
+                <div class="label">Power</div>
+                <div class="value loading" id="power">--</div>
+                <div class="unit">W</div>
+            </div>
 
-        <button class="off" onclick="setRelay(1,0)">ON</button>
-        <button class="on" onclick="setRelay(1,1)">OFF</button>
+            <div class="card energy">
+                <div class="icon">📊</div>
+                <div class="label">Energy</div>
+                <div class="value loading" id="energy">--</div>
+                <div class="unit">kWh</div>
+            </div>
 
+            <div class="card frequency">
+                <div class="icon">📶</div>
+                <div class="label">Frequency</div>
+                <div class="value loading" id="frequency">--</div>
+                <div class="unit">Hz</div>
+            </div>
+
+            <div class="card pf">
+                <div class="icon">🔄</div>
+                <div class="label">Power Factor</div>
+                <div class="value loading" id="pf">--</div>
+                <div class="unit">PF</div>
+            </div>
+        </div>
+
+        <!-- ====== RELAY SECTION ====== -->
+        <div class="section-title">🔘 Load Control</div>
+
+        <div class="relay-grid" id="relayGrid">
+            <!-- Relay 1 -->
+            <div class="relay-card off" id="relayCard1">
+                <div class="relay-info">
+                    <span class="relay-label">💡 100W Load</span>
+                    <span class="relay-status off" id="relayStatus1">● OFF</span>
+                </div>
+                <div class="relay-buttons">
+                    <button class="btn-off" id="relayOn1" onclick="setRelay(1, 0)">ON</button>
+                    <button class="btn-on" id="relayOff1" onclick="setRelay(1, 1)">OFF</button>
+                </div>
+            </div>
+
+            <!-- Relay 2 -->
+            <div class="relay-card off" id="relayCard2">
+                <div class="relay-info">
+                    <span class="relay-label">💡 200W Load</span>
+                    <span class="relay-status off" id="relayStatus2">● OFF</span>
+                </div>
+                <div class="relay-buttons">
+                    <button class="btn-off" id="relayOn2" onclick="setRelay(2, 0)">ON</button>
+                    <button class="btn-on" id="relayOff2" onclick="setRelay(2, 1)">OFF</button>
+                </div>
+            </div>
+
+            <!-- Relay 3 -->
+            <div class="relay-card off" id="relayCard3">
+                <div class="relay-info">
+                    <span class="relay-label">💡 500W Load</span>
+                    <span class="relay-status off" id="relayStatus3">● OFF</span>
+                </div>
+                <div class="relay-buttons">
+                    <button class="btn-off" id="relayOn3" onclick="setRelay(3, 0)">ON</button>
+                    <button class="btn-on" id="relayOff3" onclick="setRelay(3, 1)">OFF</button>
+                </div>
+            </div>
+        </div>
 
     </div>
 
+    <!-- ====== TOAST ====== -->
+    <div class="toast" id="toast"></div>
 
-
-    <div class="relay">
-
-        <h2 id="state2">Relay 2 : Loading...</h2>
-
-        <button class="off" onclick="setRelay(2,0)">ON</button>
-        <button class="on" onclick="setRelay(2,1)">OFF</button>
-
-
-    </div>
-
-
-
-    <div class="relay">
-
-        <h2 id="state3">Relay 3 : Loading...</h2>
-
-        <button class="off" onclick="setRelay(3,0)">ON</button>
-        <button class="on" onclick="setRelay(3,1)">OFF</button>
-
-
-    </div>
-
-
-
+    <!-- ====== JAVASCRIPT ====== -->
     <script>
-
-        const databaseURL =
+        // =============================================
+        // CONFIGURATION
+        // =============================================
+        const DB_URL =
             "https://firstesp32project-7b0e1-default-rtdb.asia-southeast1.firebasedatabase.app";
 
+        const REFRESH_INTERVAL = 2000; // milliseconds (2 seconds)
 
+        // =============================================
+        // DOM REFERENCES
+        // =============================================
+        const elements = {
+            voltage: document.getElementById('voltage'),
+            current: document.getElementById('current'),
+            power: document.getElementById('power'),
+            energy: document.getElementById('energy'),
+            frequency: document.getElementById('frequency'),
+            pf: document.getElementById('pf'),
+            lastUpdate: document.getElementById('lastUpdate'),
+            statusDot: document.getElementById('statusDot'),
+            statusText: document.getElementById('statusText'),
+            toast: document.getElementById('toast'),
+            relayCards: {
+                1: document.getElementById('relayCard1'),
+                2: document.getElementById('relayCard2'),
+                3: document.getElementById('relayCard3'),
+            },
+            relayStatus: {
+                1: document.getElementById('relayStatus1'),
+                2: document.getElementById('relayStatus2'),
+                3: document.getElementById('relayStatus3'),
+            },
+            relayOnBtns: {
+                1: document.getElementById('relayOn1'),
+                2: document.getElementById('relayOn2'),
+                3: document.getElementById('relayOn3'),
+            },
+            relayOffBtns: {
+                1: document.getElementById('relayOff1'),
+                2: document.getElementById('relayOff2'),
+                3: document.getElementById('relayOff3'),
+            },
+        };
 
-        // Read relay state
-        function getRelay(relayNo) {
+        // =============================================
+        // TOAST NOTIFICATION
+        // =============================================
+        let toastTimeout;
 
-            fetch(databaseURL + "/relay" + relayNo + "/state.json")
-
-                .then(response => response.json())
-
-                .then(data => {
-
-                    document.getElementById("state" + relayNo).innerHTML =
-                        "Relay " + relayNo + " = " + data;
-
-                });
-
+        function showToast(message, type = 'info') {
+            const toast = elements.toast;
+            toast.textContent = message;
+            toast.className = 'toast ' + type;
+            // force reflow
+            void toast.offsetWidth;
+            toast.classList.add('show');
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
         }
 
+        // =============================================
+        // FETCH DATA FROM FIREBASE
+        // =============================================
+        async function fetchMeterData() {
+            try {
+                const resp = await fetch(DB_URL + '/meter.json');
+                if (!resp.ok) throw new Error('HTTP ' + resp.status);
+                const data = await resp.json();
 
+                if (data) {
+                    // Update cards
+                    setValue('voltage', data.voltage, 'V');
+                    setValue('current', data.current, 'A');
+                    setValue('power', data.power, 'W');
+                    setValue('energy', data.energy, 'kWh');
+                    setValue('frequency', data.frequency, 'Hz');
+                    setValue('pf', data.pf, '');
 
-        // Write relay state
-        function setRelay(relayNo, state) {
+                    // Update timestamp
+                    const now = new Date();
+                    elements.lastUpdate.textContent =
+                        'Last update: ' + now.toLocaleTimeString();
 
-            fetch(databaseURL + "/relay" + relayNo + "/state.json", {
-
-                method: "PUT",
-
-                headers: {
-                    "Content-Type": "application/json"
-                },
-
-                body: JSON.stringify(state)
-
-            })
-
-                .then(() => {
-
-                    getRelay(relayNo);
-
-                });
-
+                    // Online status
+                    setOnline(true);
+                } else {
+                    setOnline(false);
+                    showToast('No data from Firebase', 'error');
+                }
+            } catch (err) {
+                console.error('Fetch error:', err);
+                setOnline(false);
+                showToast('⚠️ Failed to fetch data: ' + err.message, 'error');
+            }
         }
 
+        // =============================================
+        // UPDATE A SINGLE CARD VALUE
+        // =============================================
+        function setValue(id, value, unit) {
+            const el = elements[id];
+            if (!el) return;
 
+            // Remove loading class
+            el.classList.remove('loading');
 
-        // Load current state
-        getRelay(1);
-        getRelay(2);
-        getRelay(3);
+            // Format number
+            let display = '--';
+            if (value !== undefined && value !== null && !isNaN(value)) {
+                // Show 2 decimal places for most, 3 for energy
+                const decimals = (id === 'energy') ? 3 : 2;
+                display = Number(value).toFixed(decimals);
+            }
 
+            // For PF, show as 0.00
+            if (id === 'pf') {
+                display = Number(value || 0).toFixed(2);
+            }
+
+            el.textContent = display;
+        }
+
+        // =============================================
+        // FETCH RELAY STATES
+        // =============================================
+        async function fetchRelayStates() {
+            for (let i = 1; i <= 3; i++) {
+                try {
+                    const resp = await fetch(DB_URL + '/relay' + i + '/state.json');
+                    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+                    const state = await resp.json();
+                    updateRelayUI(i, state);
+                } catch (err) {
+                    console.error('Relay ' + i + ' fetch error:', err);
+                }
+            }
+        }
+
+        // =============================================
+        // UPDATE RELAY UI
+        // =============================================
+        function updateRelayUI(relayNo, state) {
+            const card = elements.relayCards[relayNo];
+            const statusEl = elements.relayStatus[relayNo];
+            const onBtn = elements.relayOnBtns[relayNo];
+            const offBtn = elements.relayOffBtns[relayNo];
+
+            if (!card || !statusEl) return;
+
+            // State: 0 = OFF, 1 = ON
+            const isOn = (state === 1);
+
+            // Card border color
+            card.className = 'relay-card ' + (isOn ? 'on' : 'off');
+
+            // Status text
+            statusEl.textContent = isOn ? '● ON' : '● OFF';
+            statusEl.className = 'relay-status ' + (isOn ? 'on' : 'off');
+
+            // Highlight active button
+            if (onBtn) {
+                onBtn.classList.toggle('btn-active', isOn);
+            }
+            if (offBtn) {
+                offBtn.classList.toggle('btn-active', !isOn);
+            }
+        }
+
+        // =============================================
+        // SET RELAY STATE (called from button clicks)
+        // =============================================
+        async function setRelay(relayNo, state) {
+            // state: 0 = ON (load on), 1 = OFF (load off)
+            // Wait, this is confusing. Let's clarify:
+            // In Firebase: 0 = OFF, 1 = ON
+            // In the HTML: ON button sends 0, OFF button sends 1
+            // Let's keep it consistent: 0 = OFF, 1 = ON
+
+            const label = (state === 1) ? 'ON' : 'OFF';
+            showToast('⏳ Setting Relay ' + relayNo + ' to ' + label + '...', 'info');
+
+            try {
+                const resp = await fetch(DB_URL + '/relay' + relayNo + '/state.json', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(state)
+                });
+
+                if (!resp.ok) throw new Error('HTTP ' + resp.status);
+
+                // Optimistically update UI
+                updateRelayUI(relayNo, state);
+                showToast('✅ Relay ' + relayNo + ' set to ' + label, 'success');
+
+                // Re-fetch to confirm (in case of conflict)
+                setTimeout(() => fetchRelayStates(), 500);
+            } catch (err) {
+                console.error('Set relay error:', err);
+                showToast('❌ Failed to set Relay ' + relayNo + ': ' + err.message, 'error');
+                // Revert UI by re-fetching
+                fetchRelayStates();
+            }
+        }
+
+        // =============================================
+        // ONLINE / OFFLINE STATUS
+        // =============================================
+        function setOnline(online) {
+            const dot = elements.statusDot;
+            const text = elements.statusText;
+            if (online) {
+                dot.className = 'status-dot';
+                text.textContent = 'Connected';
+                text.style.color = '#4caf50';
+            } else {
+                dot.className = 'status-dot offline';
+                text.textContent = 'Offline';
+                text.style.color = '#f44336';
+            }
+        }
+
+        // =============================================
+        // AUTO REFRESH
+        // =============================================
+        let refreshTimer = null;
+
+        function startAutoRefresh() {
+            // Initial fetch
+            fetchMeterData();
+            fetchRelayStates();
+
+            // Set up interval
+            if (refreshTimer) clearInterval(refreshTimer);
+            refreshTimer = setInterval(() => {
+                fetchMeterData();
+                fetchRelayStates();
+            }, REFRESH_INTERVAL);
+        }
+
+        // =============================================
+        // HANDLE VISIBILITY CHANGE (pause when tab hidden)
+        // =============================================
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                // Tab hidden - pause updates
+                if (refreshTimer) {
+                    clearInterval(refreshTimer);
+                    refreshTimer = null;
+                }
+            } else {
+                // Tab visible - resume
+                if (!refreshTimer) {
+                    startAutoRefresh();
+                }
+            }
+        });
+
+        // =============================================
+        // START
+        // =============================================
+        startAutoRefresh();
+
+        console.log('✅ ESP32 Dashboard ready!');
+        console.log('📡 Firebase URL:', DB_URL);
+        console.log('🔄 Refresh interval:', REFRESH_INTERVAL / 1000, 'seconds');
     </script>
-
 </body>
 
 </html>
