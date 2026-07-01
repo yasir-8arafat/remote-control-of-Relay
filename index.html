@@ -710,7 +710,7 @@
             // In the HTML: ON button sends 0, OFF button sends 1
             // Let's keep it consistent: 0 = OFF, 1 = ON
 
-            const label = (state === 1) ? 'ON' : 'OFF';
+            const label = (state === 1) ? 'OFF' : 'ON';
             showToast('⏳ Setting Relay ' + relayNo + ' to ' + label + '...', 'info');
 
             try {
