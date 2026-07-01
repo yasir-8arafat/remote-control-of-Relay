@@ -682,21 +682,21 @@
             if (!card || !statusEl) return;
 
             // State: 0 = OFF, 1 = ON
-            const isOn = (state === 1);
+            const isOFF = (state === 1);
 
             // Card border color
-            card.className = 'relay-card ' + (isOn ? 'on' : 'off');
+            card.className = 'relay-card ' + (isOFF ? 'off' : 'on');
 
             // Status text
-            statusEl.textContent = isOn ? '● ON' : '● OFF';
-            statusEl.className = 'relay-status ' + (isOn ? 'on' : 'off');
+            statusEl.textContent = isOFF ? '● OFF' : '● ON';
+            statusEl.className = 'relay-status ' + (isOFF ? 'off' : 'on');
 
             // Highlight active button
             if (onBtn) {
-                onBtn.classList.toggle('btn-active', isOn);
+                onBtn.classList.toggle('btn-active', isOFF);
             }
             if (offBtn) {
-                offBtn.classList.toggle('btn-active', !isOn);
+                offBtn.classList.toggle('btn-active', !isOFF);
             }
         }
 
