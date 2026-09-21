@@ -5,6 +5,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ESP32 Power Monitor & Relay Control</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
     <style>
         /* ========== RESET & BASE ========== */
@@ -421,6 +422,447 @@
         .toast.error {
             background: #c62828;
         }
+
+        /* ============================================================ */
+
+        /*  CSS FOR PREDICTION SECTION   */
+
+        /* ============================================================ */
+
+        /* ===== Container ===== */
+        .prediction-container {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            margin-bottom: 30px;
+        }
+
+        /* ===== Controls Row ===== */
+        .prediction-controls {
+            display: flex;
+            gap: 16px;
+            align-items: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            flex: 1;
+            min-width: 140px;
+        }
+
+        .input-group label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #546e7a;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .predict-select {
+            padding: 12px 16px;
+            font-size: 16px;
+            border: 2px solid #cfd8dc;
+            border-radius: 10px;
+            background: #fafafa;
+            color: #263238;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .predict-select:hover {
+            border-color: #90a4ae;
+        }
+
+        .predict-select:focus {
+            outline: none;
+            border-color: #1a237e;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(26, 35, 126, 0.1);
+        }
+
+        .predict-btn {
+            padding: 12px 32px;
+            font-size: 16px;
+            font-weight: 600;
+            color: white;
+            background: linear-gradient(135deg, #1a237e, #0d47a1);
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 180px;
+            height: 48px;
+            box-shadow: 0 4px 12px rgba(13, 71, 161, 0.3);
+        }
+
+        .predict-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(13, 71, 161, 0.4);
+        }
+
+        .predict-btn:active {
+            transform: translateY(0);
+        }
+
+        .predict-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* ===== Enhanced Result Card ===== */
+        .prediction-result {
+            margin-top: 24px;
+            border: 2px solid #4caf50;
+            border-radius: 12px;
+            background: white;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(76, 175, 80, 0.2);
+            animation: slideIn 0.4s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-header {
+            background: linear-gradient(135deg, #2e7d32, #388e3c);
+            color: white;
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .result-icon {
+            font-size: 20px;
+        }
+
+        .result-main {
+            padding: 24px;
+            text-align: center;
+            background: linear-gradient(135deg, #e8f5e9, #f1f8e9);
+            border-bottom: 2px solid #c8e6c9;
+        }
+
+        .result-slot {
+            font-size: 16px;
+            color: #546e7a;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .result-power {
+            font-size: 42px;
+            font-weight: 800;
+            color: #1a237e;
+            letter-spacing: -1px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* ===== Model Info Section ===== */
+        .model-info-section {
+            background: #fafafa;
+        }
+
+        .model-info-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 20px;
+            cursor: pointer;
+            background: #eceff1;
+            font-size: 14px;
+            font-weight: 600;
+            color: #37474f;
+            transition: background 0.2s ease;
+            user-select: none;
+        }
+
+        .model-info-header:hover {
+            background: #cfd8dc;
+        }
+
+        .toggle-icon {
+            font-size: 12px;
+            transition: transform 0.3s ease;
+        }
+
+        .toggle-icon.open {
+            transform: rotate(180deg);
+        }
+
+        .model-info-body {
+            padding: 20px;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                max-height: 0;
+            }
+
+            to {
+                opacity: 1;
+                max-height: 500px;
+            }
+        }
+
+        .model-info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 14px;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            padding: 12px 14px;
+            background: white;
+            border-radius: 10px;
+            border-left: 3px solid #1a237e;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .info-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #78909c;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .info-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: #263238;
+            word-break: break-word;
+        }
+
+        .info-value.highlight-info {
+            color: #2e7d32;
+            font-size: 16px;
+        }
+
+        .result-footer {
+            background: rgba(255, 255, 255, 0.6);
+            padding: 10px 20px;
+            font-size: 12px;
+            color: #546e7a;
+            text-align: right;
+        }
+
+        /* ===== Error Card ===== */
+        .prediction-error {
+            margin-top: 20px;
+            padding: 16px 20px;
+            background: #ffebee;
+            border: 2px solid #f44336;
+            border-radius: 10px;
+            color: #c62828;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: shake 0.4s ease-out;
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-5px);
+            }
+
+            75% {
+                transform: translateX(5px);
+            }
+        }
+
+        /* ===== Responsive ===== */
+        @media (max-width: 600px) {
+            .prediction-controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .input-group {
+                min-width: 100%;
+            }
+
+            .predict-btn {
+                width: 100%;
+                min-width: 100%;
+            }
+
+            .result-power {
+                font-size: 32px;
+            }
+
+            .model-info-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .info-item {
+                padding: 10px 12px;
+            }
+
+            .info-value {
+                font-size: 13px;
+            }
+        }
+
+        /*  CSS FOR PREDICTION SECTION End */
+
+        /* ================================================== */
+        /* GRAPH STYLES */
+        /* ===================================================== */
+
+        .graph-container {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            margin-bottom: 30px;
+        }
+
+        .graph-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #eceff1;
+        }
+
+        .graph-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 17px;
+            font-weight: 600;
+            color: #263238;
+        }
+
+        .graph-icon {
+            font-size: 22px;
+        }
+
+        .graph-stats {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .stat {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 8px 16px;
+            background: #f5f7fa;
+            border-radius: 10px;
+            min-width: 100px;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #78909c;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1a237e;
+            margin-top: 2px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .graph-body {
+            position: relative;
+            height: 400px;
+            margin-bottom: 16px;
+        }
+
+        .graph-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 16px;
+            border-top: 2px solid #eceff1;
+            font-size: 13px;
+            color: #78909c;
+        }
+
+        .graph-refresh-btn {
+            padding: 8px 20px;
+            font-size: 13px;
+            font-weight: 600;
+            color: white;
+            background: linear-gradient(135deg, #1a237e, #0d47a1);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .graph-refresh-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(13, 71, 161, 0.3);
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .graph-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .graph-stats {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .stat {
+                min-width: 70px;
+                padding: 6px 10px;
+            }
+
+            .stat-value {
+                font-size: 14px;
+            }
+
+            .graph-body {
+                height: 300px;
+            }
+        }
+
+        /* Graph Style Completed */
     </style>
 </head>
 
@@ -519,6 +961,155 @@
                 <div class="relay-buttons">
                     <button class="btn-off" id="relayOn3" onclick="setRelay(3, 0)">ON</button>
                     <button class="btn-on" id="relayOff3" onclick="setRelay(3, 1)">OFF</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- SECTION: POWER PREDICTION  -->
+        <!-- ============================================================ -->
+
+        <div>
+            <div class="section-title">🔮 Power Prediction</div>
+
+            <!-- PREDICTION CARD -->
+            <div class="prediction-container">
+                <div class="prediction-controls">
+                    <div class="input-group">
+                        <label for="predictHour">Hour</label>
+                        <select id="predictHour" class="predict-select">
+                            <option value="" disabled selected>Select Hour</option>
+                            <!-- Options added by JavaScript -->
+                        </select>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="predictMinute">Minute</label>
+                        <select id="predictMinute" class="predict-select">
+                            <option value="" disabled selected>Select Minute</option>
+                            <option value="0">00</option>
+                            <option value="30">30</option>
+                        </select>
+                    </div>
+
+                    <button id="predictBtn" class="predict-btn" onclick="runPrediction()">
+                        🔮 Predict Power
+                    </button>
+                </div>
+
+                <!-- RESULT CARD (hidden by default) -->
+                <div id="predictionResult" class="prediction-result" style="display: none;">
+                    <!-- Header -->
+                    <div class="result-header">
+                        <span class="result-icon">🎯</span>
+                        <span class="result-title">Prediction Result</span>
+                    </div>
+
+                    <!-- Main Result -->
+                    <div class="result-body">
+                        <div class="result-main">
+                            <div class="result-slot" id="resultSlot">--</div>
+                            <div class="result-power" id="resultPower">--</div>
+                        </div>
+                    </div>
+
+                    <!-- Model Information (expandable) -->
+                    <div class="model-info-section">
+                        <div class="model-info-header" onclick="toggleModelInfo()">
+                            <span>📊 Model Information</span>
+                            <span class="toggle-icon" id="modelToggleIcon">▼</span>
+                        </div>
+
+                        <div class="model-info-body" id="modelInfoBody" style="display: none;">
+                            <div class="model-info-grid">
+                                <div class="info-item">
+                                    <span class="info-label">Model Type</span>
+                                    <span class="info-value" id="infoModelType">--</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Version</span>
+                                    <span class="info-value" id="infoModelVersion">--</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Target</span>
+                                    <span class="info-value" id="infoTarget">--</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Training Days</span>
+                                    <span class="info-value" id="infoTrainingDays">--</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Training Samples</span>
+                                    <span class="info-value" id="infoTrainingSamples">--</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">MAE</span>
+                                    <span class="info-value highlight-info" id="infoMAE">--</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">R² Score</span>
+                                    <span class="info-value highlight-info" id="infoR2">--</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Features Used</span>
+                                    <span class="info-value" id="infoFeatures">--</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="result-footer">
+                        <span id="resultTimestamp" class="result-timestamp">--</span>
+                    </div>
+                </div>
+
+                <!-- ERROR MESSAGE -->
+                <div id="predictionError" class="prediction-error" style="display: none;">
+                    <span>❌</span>
+                    <span id="errorMessage">An error occurred</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- SECTION: FULL-DAY POWER PREDICTION GRAPH  -->
+        <!-- ============================================================ -->
+
+        <div>
+            <div class="section-title">📊 24-Hour Power Prediction</div>
+
+            <div class="graph-container">
+                <div class="graph-header">
+                    <div class="graph-title">
+                        <span class="graph-icon">📈</span>
+                        <span>Predicted Power Consumption (48 Slots)</span>
+                    </div>
+                    <div class="graph-stats">
+                        <div class="stat">
+                            <span class="stat-label">Peak</span>
+                            <span class="stat-value" id="statPeak">--</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label">Average</span>
+                            <span class="stat-value" id="statAvg">--</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label">Total</span>
+                            <span class="stat-value" id="statTotal">--</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="graph-body">
+                    <canvas id="predictionChart"></canvas>
+                </div>
+
+                <div class="graph-footer">
+                    <span id="graphUpdated">--</span>
+                    <button class="graph-refresh-btn" onclick="drawPredictionChart()">
+                        🔄 Refresh
+                    </button>
                 </div>
             </div>
         </div>
@@ -797,6 +1388,394 @@
         console.log('✅ ESP32 Dashboard ready!');
         console.log('📡 Firebase URL:', DB_URL);
         console.log('🔄 Refresh interval:', REFRESH_INTERVAL / 1000, 'seconds');
+
+
+        // ============================================================
+        // Script Code Prediction
+
+        // POPULATE HOUR DROPDOWN (0-23)
+        // ============================================================
+
+
+        function populateHourDropdown() {
+            const hourSelect = document.getElementById('predictHour');
+
+            // Clear existing options (except first placeholder)
+            hourSelect.innerHTML = '<option value="" disabled selected>Select Hour</option>';
+
+            for (let h = 0; h < 24; h++) {
+                const option = document.createElement('option');
+                option.value = h;
+                option.textContent = String(h).padStart(2, '0');  // 00, 01, ..., 23
+                hourSelect.appendChild(option);
+            }
+        }
+
+        // ============================================================
+        // RUN PREDICTION
+        // ============================================================
+        async function runPrediction() {
+            const hourSelect = document.getElementById('predictHour');
+            const minuteSelect = document.getElementById('predictMinute');
+            const predictBtn = document.getElementById('predictBtn');
+            const resultCard = document.getElementById('predictionResult');
+            const errorCard = document.getElementById('predictionError');
+
+            // Get values
+            const hour = hourSelect.value;
+            const minute = minuteSelect.value;
+
+            // ===== VALIDATION =====
+            if (hour === '' || minute === '') {
+                showError('Please select both hour and minute!');
+                return;
+            }
+
+            // ===== SHOW LOADING =====
+            predictBtn.disabled = true;
+            predictBtn.textContent = '⏳ Loading...';
+            resultCard.style.display = 'none';
+            errorCard.style.display = 'none';
+
+            try {
+                // ===== BUILD SLOT KEY (e.g., "1530") =====
+                const slotKey = String(hour).padStart(2, '0') + String(minute).padStart(2, '0');
+
+                console.log(`🔍 Fetching prediction for slot: ${slotKey}`);
+
+                // ===== FETCH FROM FIREBASE =====
+                const response = await fetch(`${DB_URL}/predictions/${slotKey}.json`);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                // ===== CHECK IF DATA EXISTS =====
+                if (!data) {
+                    showError(`No prediction available for ${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`);
+                    return;
+                }
+
+                // ===== DISPLAY RESULT =====
+                displayResult(data);
+
+            } catch (error) {
+                console.error('Prediction error:', error);
+                showError('Failed to fetch prediction. Please try again.');
+            } finally {
+                // ===== RESET BUTTON =====
+                predictBtn.disabled = false;
+                predictBtn.textContent = '🔮 Predict Power';
+            }
+        }
+
+        // ============================================================
+        // DISPLAY RESULT IN CARD
+        // DISPLAY RESULT IN ENHANCED CARD
+        // ============================================================
+
+        // // Global to store model info
+        let modelInfoCache = null;
+
+        async function loadModelInfo() {
+            if (modelInfoCache) return modelInfoCache;
+
+            try {
+                const response = await fetch(`${DB_URL}/model_info.json`);
+                modelInfoCache = await response.json();
+                return modelInfoCache;
+            } catch (error) {
+                console.error('Failed to load model info:', error);
+                return null;
+            }
+        }
+
+        async function displayResult(data) {
+            const resultCard = document.getElementById('predictionResult');
+
+            // ===== Update main result =====
+            document.getElementById('resultSlot').textContent = data.slot_display;
+            document.getElementById('resultPower').textContent = data.predicted_power.toFixed(2) + ' W';
+
+            // ===== Load and display model info =====
+            const modelInfo = await loadModelInfo();
+
+            if (modelInfo) {
+                document.getElementById('infoModelType').textContent = modelInfo.model_type || '--';
+                document.getElementById('infoModelVersion').textContent = modelInfo.model_version || '--';
+                document.getElementById('infoTarget').textContent = modelInfo.target || '--';
+                document.getElementById('infoTrainingDays').textContent = modelInfo.training_days + ' days';
+                document.getElementById('infoTrainingSamples').textContent = modelInfo.training_samples + ' samples';
+                document.getElementById('infoMAE').textContent = modelInfo.mae ? modelInfo.mae.toFixed(2) + ' W' : '--';
+                document.getElementById('infoR2').textContent = modelInfo.r2_score ? modelInfo.r2_score.toFixed(4) : '--';
+                document.getElementById('infoFeatures').textContent =
+                    Array.isArray(modelInfo.feature_names)
+                        ? modelInfo.feature_names.join(', ')
+                        : '--';
+            }
+
+            // ===== Update timestamp =====
+            const updatedAt = data.updated_at
+                ? new Date(data.updated_at).toLocaleString()
+                : 'Just now';
+            document.getElementById('resultTimestamp').textContent = `Model updated: ${updatedAt}`;
+
+            // ===== Show card =====
+            resultCard.style.display = 'block';
+            document.getElementById('predictionError').style.display = 'none';
+
+            console.log('✅ Prediction displayed:', data);
+        }
+
+        // ============================================================
+        // TOGGLE MODEL INFO
+        // ============================================================
+        function toggleModelInfo() {
+            const body = document.getElementById('modelInfoBody');
+            const icon = document.getElementById('modelToggleIcon');
+
+            if (body.style.display === 'none' || !body.style.display) {
+                body.style.display = 'block';
+                icon.textContent = '▲';
+                icon.classList.add('open');
+            } else {
+                body.style.display = 'none';
+                icon.textContent = '▼';
+                icon.classList.remove('open');
+            }
+        }
+
+        // ============================================================
+        // SHOW ERROR MESSAGE
+        // ============================================================
+        function showError(message) {
+            const errorCard = document.getElementById('predictionError');
+            const resultCard = document.getElementById('predictionResult');
+
+            document.getElementById('errorMessage').textContent = message;
+            errorCard.style.display = 'flex';
+            resultCard.style.display = 'none';
+
+            console.error('❌ ' + message);
+        }
+
+        // ============================================================
+        // RESET FORM
+        // ============================================================
+        function resetPrediction() {
+            document.getElementById('predictHour').value = '';
+            document.getElementById('predictMinute').value = '';
+            document.getElementById('predictionResult').style.display = 'none';
+            document.getElementById('predictionError').style.display = 'none';
+        }
+
+        // ============================================================
+        // INITIALIZE ON PAGE LOAD
+        // ============================================================
+        document.addEventListener('DOMContentLoaded', function () {
+            populateHourDropdown();
+            console.log('✅ Prediction section ready');
+        });
+
+        // ============================================================
+        // OPTIONAL: KEYBOARD SUPPORT (Press Enter to Predict)
+        // ============================================================
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' &&
+                (e.target.id === 'predictHour' || e.target.id === 'predictMinute')) {
+                runPrediction();
+            }
+        });
+
+        // =================================================
+        // Graph Chart Script File 
+        // ==================================================
+
+        // ============================================================
+        // FULL-DAY PREDICTION GRAPH (Chart.js)
+        // ============================================================
+
+        let predictionChartInstance = null;  // Store chart instance
+
+        async function drawPredictionChart() {
+            try {
+                console.log('📊 Loading prediction chart...');
+
+                // ===== FETCH ALL PREDICTIONS FROM FIREBASE =====
+                const response = await fetch(`${DB_URL}/predictions.json`);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                if (!data) {
+                    console.warn('⚠️ No predictions found');
+                    return;
+                }
+
+                // ===== SORT BY SLOT INDEX =====
+                const sorted = Object.values(data).sort((a, b) => a.slot_index - b.slot_index);
+
+                // ===== PREPARE DATA FOR CHART =====
+                const labels = sorted.map(d => {
+                    // Format: "15:30" (just start time)
+                    return d.slot_display.split(' - ')[0];
+                });
+
+                const powerValues = sorted.map(d => parseFloat(d.predicted_power));
+
+                // ===== CALCULATE STATS =====
+                const peak = Math.max(...powerValues);
+                const avg = powerValues.reduce((a, b) => a + b, 0) / powerValues.length;
+                // Total energy = sum of (power × 0.5 hour) / 1000 → kWh
+                const totalKWh = powerValues.reduce((a, b) => a + b, 0) * 0.5 / 1000;
+
+                // ===== UPDATE STATS DISPLAY =====
+                document.getElementById('statPeak').textContent = peak.toFixed(1) + ' W';
+                document.getElementById('statAvg').textContent = avg.toFixed(1) + ' W';
+                document.getElementById('statTotal').textContent = totalKWh.toFixed(2) + ' kWh';
+
+                // ===== UPDATE TIMESTAMP =====
+                const firstSlot = sorted[0];
+                const updatedAt = firstSlot.updated_at
+                    ? new Date(firstSlot.updated_at).toLocaleString()
+                    : 'Just now';
+                document.getElementById('graphUpdated').textContent = `Model updated: ${updatedAt}`;
+
+                // ===== DESTROY OLD CHART IF EXISTS =====
+                if (predictionChartInstance) {
+                    predictionChartInstance.destroy();
+                }
+
+                // ===== CREATE CHART =====
+                const ctx = document.getElementById('predictionChart').getContext('2d');
+
+                predictionChartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Predicted Power (W)',
+                            data: powerValues,
+                            backgroundColor: powerValues.map(v => {
+                                // Color code by power level
+                                if (v < 30) return 'rgba(120, 144, 156, 0.7)';   // Gray (OFF)
+                                if (v < 90) return 'rgba(255, 193, 7, 0.8)';      // Yellow (60W)
+                                if (v < 140) return 'rgba(76, 175, 80, 0.8)';     // Green (120W)
+                                if (v < 190) return 'rgba(33, 150, 243, 0.8)';    // Blue (160W)
+                                return 'rgba(244, 67, 54, 0.8)';                  // Red (220W)
+                            }),
+                            borderColor: powerValues.map(v => {
+                                if (v < 30) return '#546e7a';
+                                if (v < 90) return '#f57c00';
+                                if (v < 140) return '#388e3c';
+                                if (v < 190) return '#1976d2';
+                                return '#d32f2f';
+                            }),
+                            borderWidth: 1.5,
+                            borderRadius: 4,
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        animation: {
+                            duration: 1000,
+                            easing: 'easeOutQuart'
+                        },
+                        plugins: {
+                            legend: {
+                                display: false  // We have custom stats
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(26, 35, 126, 0.95)',
+                                titleColor: 'white',
+                                bodyColor: 'white',
+                                borderColor: '#1a237e',
+                                borderWidth: 1,
+                                padding: 12,
+                                cornerRadius: 8,
+                                displayColors: false,
+                                callbacks: {
+                                    title: function (context) {
+                                        const idx = context[0].dataIndex;
+                                        return sorted[idx].slot_display;
+                                    },
+                                    label: function (context) {
+                                        return `⚡ Power: ${context.parsed.y.toFixed(2)} W`;
+                                    },
+                                    afterLabel: function (context) {
+                                        const hour = sorted[context.dataIndex].hour;
+                                        const isPeak = hour >= 18 && hour <= 22;
+                                        return isPeak ? '🔥 Peak Hour' : '';
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: {
+                                    display: false
+                                },
+                                ticks: {
+                                    color: '#546e7a',
+                                    font: {
+                                        size: 11,
+                                        weight: '500'
+                                    },
+                                    maxRotation: 45,
+                                    minRotation: 45,
+                                    autoSkip: false,
+                                    callback: function (value, index) {
+                                        // Show only every 2nd label to avoid clutter
+                                        return index % 2 === 0 ? this.getLabelForValue(value) : '';
+                                    }
+                                }
+                            },
+                            y: {
+                                beginAtZero: true,
+                                grid: {
+                                    color: 'rgba(0, 0, 0, 0.05)'
+                                },
+                                ticks: {
+                                    color: '#546e7a',
+                                    font: {
+                                        size: 12,
+                                        weight: '500'
+                                    },
+                                    callback: function (value) {
+                                        return value + ' W';
+                                    }
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Power (W)',
+                                    color: '#37474f',
+                                    font: {
+                                        size: 13,
+                                        weight: '600'
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+
+                console.log(`✅ Chart loaded with ${sorted.length} predictions`);
+
+            } catch (error) {
+                console.error('❌ Chart error:', error);
+            }
+        }
+
+        // Auto-load chart when page loads
+        document.addEventListener('DOMContentLoaded', function () {
+            setTimeout(drawPredictionChart, 500);  // Small delay to let DOM settle
+        });
     </script>
 </body>
 
