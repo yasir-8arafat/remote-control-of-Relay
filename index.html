@@ -91,9 +91,212 @@
             }
         }
 
+        /* ********************************************************************************* */
+        /* ****************=========== All Sensor Parameter Readings==========*************  */
+        /* ********************************************************************************* */
+
+        /* ============================================================ */
+        /* FULL AREA CARD STYLES (NEW)                                  */
+        /* ============================================================ */
+
+        .fullarea-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(26, 35, 126, 0.15);
+            overflow: hidden;
+            margin-bottom: 30px;
+            border-top: 5px solid #1a237e;
+            animation: fullAreaFadeIn 0.5s ease-out;
+        }
+
+        @keyframes fullAreaFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ===== Header ===== */
+        .fullarea-header {
+            background: linear-gradient(135deg, #1a237e, #0d47a1);
+            color: white;
+            padding: 18px 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+        }
+
+        .fullarea-icon {
+            font-size: 24px;
+        }
+
+        .fullarea-name {
+            flex: 1;
+        }
+
+        .fullarea-status {
+            font-size: 16px;
+            color: #4caf50;
+            transition: color 0.3s ease;
+        }
+
+        .fullarea-status.offline {
+            color: #f44336;
+        }
+
+        /* ===== Grid of Parameters ===== */
+        .fullarea-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            padding: 24px;
+            background: #fafbfc;
+        }
+
+        .fullarea-param {
+            background: white;
+            border-radius: 12px;
+            padding: 18px 16px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            border-top: 3px solid #1a237e;
+        }
+
+        .fullarea-param:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .fullarea-icon-emoji {
+            font-size: 28px;
+            margin-bottom: 6px;
+        }
+
+        .fullarea-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: #78909c;
+            font-weight: 600;
+            letter-spacing: 0.8px;
+            margin-bottom: 8px;
+        }
+
+        .fullarea-value {
+            display: flex;
+            align-items: baseline;
+            justify-content: center;
+            gap: 4px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .fullarea-value span:first-child {
+            font-size: 26px;
+            font-weight: 800;
+            color: #1a237e;
+            letter-spacing: -0.5px;
+        }
+
+        .fullarea-unit {
+            font-size: 14px;
+            color: #78909c;
+            font-weight: 500;
+        }
+
+        /* ===== Parameter Color Variants ===== */
+        .fullarea-param.voltage-param {
+            border-top-color: #e53935;
+        }
+
+        .fullarea-param.voltage-param .fullarea-value span:first-child {
+            color: #e53935;
+        }
+
+        .fullarea-param.current-param {
+            border-top-color: #1e88e5;
+        }
+
+        .fullarea-param.current-param .fullarea-value span:first-child {
+            color: #1e88e5;
+        }
+
+        .fullarea-param.power-param {
+            border-top-color: #43a047;
+        }
+
+        .fullarea-param.power-param .fullarea-value span:first-child {
+            color: #43a047;
+        }
+
+        .fullarea-param.energy-param {
+            border-top-color: #f9a825;
+        }
+
+        .fullarea-param.energy-param .fullarea-value span:first-child {
+            color: #f9a825;
+        }
+
+        .fullarea-param.frequency-param {
+            border-top-color: #8e24aa;
+        }
+
+        .fullarea-param.frequency-param .fullarea-value span:first-child {
+            color: #8e24aa;
+        }
+
+        .fullarea-param.pf-param {
+            border-top-color: #00acc1;
+        }
+
+        .fullarea-param.pf-param .fullarea-value span:first-child {
+            color: #00acc1;
+        }
+
+        /* ===== Footer ===== */
+        .fullarea-footer {
+            padding: 12px 24px;
+            background: #f5f7fa;
+            font-size: 12px;
+            color: #78909c;
+            text-align: right;
+            border-top: 1px solid #eceff1;
+        }
+
+        /* ===== Responsive ===== */
+        @media (max-width: 768px) {
+            .fullarea-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+                padding: 16px;
+            }
+
+            .fullarea-value span:first-child {
+                font-size: 22px;
+            }
+
+            .fullarea-header {
+                font-size: 16px;
+                padding: 14px 18px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .fullarea-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
         /* ========== GRID LAYOUT ========== */
         /* ============================================================ */
-        /* SENSOR CARD STYLES                                           */
+        /* Other 3 Sunsensor SENSOR Grid CARD STYLES                                           */
         /* ============================================================ */
 
         .sensor-grid {
@@ -897,100 +1100,101 @@
             </div>
         </header>
 
-        <!-- ====== METER CARDS ====== -->
-        <!-- <div class="grid" id="meterGrid">
-            <div class="card voltage">
-                <div class="icon">⚡</div>
-                <div class="label">Voltage</div>
-                <div class="value loading" id="voltage">--</div>
-                <div class="unit">V</div>
-            </div>
-
-            <div class="card current">
-                <div class="icon">🔌</div>
-                <div class="label">Current</div>
-                <div class="value loading" id="current">--</div>
-                <div class="unit">A</div>
-            </div>
-
-            <div class="card power">
-                <div class="icon">💡</div>
-                <div class="label">Power</div>
-                <div class="value loading" id="power">--</div>
-                <div class="unit">W</div>
-            </div>
-
-            <div class="card energy">
-                <div class="icon">📊</div>
-                <div class="label">Energy</div>
-                <div class="value loading" id="energy">--</div>
-                <div class="unit">kWh</div>
-            </div>
-
-            <div class="card frequency">
-                <div class="icon">📶</div>
-                <div class="label">Frequency</div>
-                <div class="value loading" id="frequency">--</div>
-                <div class="unit">Hz</div>
-            </div>
-
-            <div class="card pf">
-                <div class="icon">🔄</div>
-                <div class="label">Power Factor</div>
-                <div class="value loading" id="pf">--</div>
-                <div class="unit">PF</div>
-            </div>
-        </div> -->
-
         <!-- updated all 3 area sensor reading cards  -->
 
-        <div class="section-title">📡 Live Sensor Readings</div>
+        <div style="text-align: center; font-weight: 500; font-size: 28px;">----------📡 Live Sensor
+            Readings-----------</div>
+
+        <!-- ============================================================ -->
+        <!-- SECTION 1: FULL AREA (BIG CARD)                              -->
+        <!-- ============================================================ -->
+
+        <div class="section-title">🏠 Full Area — Total Consumption</div>
+
+        <div class="fullarea-container">
+            <div class="fullarea-header">
+                <span class="fullarea-icon">🏠</span>
+                <span class="fullarea-name">Full Area</span>
+                <span class="fullarea-status" id="status-fullArea">●</span>
+            </div>
+
+            <div class="fullarea-grid">
+                <!-- VOLTAGE -->
+                <div class="fullarea-param voltage-param">
+                    <div class="fullarea-icon-emoji">⚡</div>
+                    <div class="fullarea-label">Voltage</div>
+                    <div class="fullarea-value">
+                        <span id="fullArea-voltage">--</span>
+                        <span class="fullarea-unit">V</span>
+                    </div>
+                </div>
+
+                <!-- CURRENT -->
+                <div class="fullarea-param current-param">
+                    <div class="fullarea-icon-emoji">🔌</div>
+                    <div class="fullarea-label">Current</div>
+                    <div class="fullarea-value">
+                        <span id="fullArea-current">--</span>
+                        <span class="fullarea-unit">A</span>
+                    </div>
+                </div>
+
+                <!-- POWER -->
+                <div class="fullarea-param power-param">
+                    <div class="fullarea-icon-emoji">💡</div>
+                    <div class="fullarea-label">Power</div>
+                    <div class="fullarea-value">
+                        <span id="fullArea-power">--</span>
+                        <span class="fullarea-unit">W</span>
+                    </div>
+                </div>
+
+                <!-- ENERGY -->
+                <div class="fullarea-param energy-param">
+                    <div class="fullarea-icon-emoji">📊</div>
+                    <div class="fullarea-label">Energy</div>
+                    <div class="fullarea-value">
+                        <span id="fullArea-energy">--</span>
+                        <span class="fullarea-unit">kWh</span>
+                    </div>
+                </div>
+
+                <!-- FREQUENCY -->
+                <div class="fullarea-param frequency-param">
+                    <div class="fullarea-icon-emoji">📶</div>
+                    <div class="fullarea-label">Frequency</div>
+                    <div class="fullarea-value">
+                        <span id="fullArea-frequency">--</span>
+                        <span class="fullarea-unit">Hz</span>
+                    </div>
+                </div>
+
+                <!-- POWER FACTOR -->
+                <div class="fullarea-param pf-param">
+                    <div class="fullarea-icon-emoji">🔄</div>
+                    <div class="fullarea-label">Power Factor</div>
+                    <div class="fullarea-value">
+                        <span id="fullArea-pf">--</span>
+                        <span class="fullarea-unit">PF</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="fullarea-footer">
+                <span id="fullArea-lastUpdate">Waiting for data...</span>
+            </div>
+        </div>
+
+
+        <!-- ============================================================ -->
+        <!-- SECTION 2: SUB-AREAS (3 SMALL CARDS)                         -->
+        <!-- ============================================================ -->
+
+        <div class="section-title">📡 Sub-Areas — Zone Readings</div>
 
         <div class="sensor-grid">
 
-            <!-- ===== SENSOR 4: FULL AREA ===== -->
-            <div class="sensor-card" id="sensor-fullArea">
-                <div class="sensor-header">
-                    <span class="sensor-icon">🏠</span>
-                    <span class="sensor-name">Full Area</span>
-                    <span class="sensor-status" id="status-fullArea">●</span>
-                </div>
-                <div class="sensor-body">
-                    <div class="sensor-param">
-                        <div class="param-label">⚡ Voltage</div>
-                        <div class="param-value"><span id="fullArea-voltage">--</span><span class="param-unit">V</span>
-                        </div>
-                    </div>
-                    <div class="sensor-param">
-                        <div class="param-label">🔌 Current</div>
-                        <div class="param-value"><span id="fullArea-current">--</span><span class="param-unit">A</span>
-                        </div>
-                    </div>
-                    <div class="sensor-param highlight">
-                        <div class="param-label">💡 Power</div>
-                        <div class="param-value"><span id="fullArea-power">--</span><span class="param-unit">W</span>
-                        </div>
-                    </div>
-                    <div class="sensor-param">
-                        <div class="param-label">📊 Energy</div>
-                        <div class="param-value"><span id="fullArea-energy">--</span><span class="param-unit">kWh</span>
-                        </div>
-                    </div>
-                    <div class="sensor-param">
-                        <div class="param-label">📶 Frequency</div>
-                        <div class="param-value"><span id="fullArea-frequency">--</span><span
-                                class="param-unit">Hz</span></div>
-                    </div>
-                    <div class="sensor-param">
-                        <div class="param-label">🔄 PF</div>
-                        <div class="param-value"><span id="fullArea-pf">--</span><span class="param-unit">PF</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="sensor-footer"><span id="fullArea-lastUpdate">Waiting for data...</span></div>
-            </div>
-
-            <!-- ===== SENSOR 1: AREA 1 ===== -->
+            <!-- ===== AREA 1 ===== -->
             <div class="sensor-card" id="sensor-area1">
                 <div class="sensor-header">
                     <span class="sensor-icon">🔌</span>
@@ -1018,7 +1222,7 @@
                         </div>
                     </div>
                     <div class="sensor-param">
-                        <div class="param-label">📶 Frequency</div>
+                        <div class="param-label">📶 Freq</div>
                         <div class="param-value"><span id="area1-frequency">--</span><span class="param-unit">Hz</span>
                         </div>
                     </div>
@@ -1030,7 +1234,7 @@
                 <div class="sensor-footer"><span id="area1-lastUpdate">Waiting for data...</span></div>
             </div>
 
-            <!-- ===== SENSOR 2: AREA 2 ===== -->
+            <!-- ===== AREA 2 ===== -->
             <div class="sensor-card" id="sensor-area2">
                 <div class="sensor-header">
                     <span class="sensor-icon">🔌</span>
@@ -1058,7 +1262,7 @@
                         </div>
                     </div>
                     <div class="sensor-param">
-                        <div class="param-label">📶 Frequency</div>
+                        <div class="param-label">📶 Freq</div>
                         <div class="param-value"><span id="area2-frequency">--</span><span class="param-unit">Hz</span>
                         </div>
                     </div>
@@ -1070,7 +1274,7 @@
                 <div class="sensor-footer"><span id="area2-lastUpdate">Waiting for data...</span></div>
             </div>
 
-            <!-- ===== SENSOR 3: AREA 3 ===== -->
+            <!-- ===== AREA 3 ===== -->
             <div class="sensor-card" id="sensor-area3">
                 <div class="sensor-header">
                     <span class="sensor-icon">🔌</span>
@@ -1098,7 +1302,7 @@
                         </div>
                     </div>
                     <div class="sensor-param">
-                        <div class="param-label">📶 Frequency</div>
+                        <div class="param-label">📶 Freq</div>
                         <div class="param-value"><span id="area3-frequency">--</span><span class="param-unit">Hz</span>
                         </div>
                     </div>
