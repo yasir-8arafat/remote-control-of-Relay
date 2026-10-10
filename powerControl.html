@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Power Prediction & Control | AI-Driven Smart Microgrid</title>
+    <link rel="stylesheet" href="styles/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+
+<body class="">
+    <header class="header container">
+        <!-- ============================================================ -->
+        <!-- SHARED NAVBAR — Works on All 3 Pages                        -->
+        <!-- ============================================================ -->
+
+        <nav class="main-navbar">
+            <div class="nav-container">
+
+                <!-- Hamburger Button (moves left on desktop) -->
+                <button class="hamburger-btn" id="hamburgerBtn" onclick="toggleNavMenu()" aria-label="Menu">
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                </button>
+
+                <!-- Brand / Title -->
+                <div class="nav-brand">
+                    <span class="brand-icon">⚡</span>
+                    <span class="brand-text">AI-Driven Smart Microgrid Management System</span>
+                </div>
+
+                <!-- Status Pill -->
+                <div class="nav-status">
+                    <span class="status-dot" id="statusDot"></span>
+                    <span id="statusText">Connected</span>
+                    <span class="last-update" id="lastUpdate">Last update: --</span>
+                </div>
+
+            </div>
+
+            <!-- Dropdown Menu -->
+            <div class="nav-menu" id="navMenu">
+                <a href="index.html" class="nav-item" data-page="index">
+                    <span class="nav-item-icon">📊</span>
+                    <div class="nav-item-text">
+                        <span class="nav-item-title">Live Monitoring</span>
+                        <span class="nav-item-sub">Dashboard</span>
+                    </div>
+                </a>
+
+                <a href="powerControl.html" class="nav-item" data-page="power">
+                    <span class="nav-item-icon">🔮</span>
+                    <div class="nav-item-text">
+                        <span class="nav-item-title">Power Prediction</span>
+                        <span class="nav-item-sub">Intelligent Control</span>
+                    </div>
+                </a>
+
+                <a href="energyCost.html" class="nav-item" data-page="energy">
+                    <span class="nav-item-icon">💰</span>
+                    <div class="nav-item-text">
+                        <span class="nav-item-title">Energy Forecasting</span>
+                        <span class="nav-item-sub">Cost Optimization</span>
+                    </div>
+                </a>
+            </div>
+
+            <div class="nav-overlay" id="navOverlay" onclick="closeNavMenu()"></div>
+        </nav>
+    </header>
+    <main class="container">
+        <!-- ============================================================ -->
+        <!-- MAIN CONTENT                                                 -->
+        <!-- ============================================================ -->
+        <!-- Page Titale & Model info button -->
+        <div class="page-header">
+            <h1 class="page-title">🔮 Power Prediction & Intelligent Control</h1>
+            <button class="model-info-btn" onclick="openModelInfoModal()">
+                <span>📊</span>
+                <span class="btn-text">Model Info</span>
+            </button>
+        </div>
+
+        <!-- ===== ROW 1: FULL AREA ===== -->
+        <div class="pred-row" data-sensor="fullArea">
+            <div class="pred-card">
+                <div class="pred-card-header">
+                    <span class="pred-card-icon">🏠</span>
+                    <span class="pred-card-name">Full Area</span>
+                </div>
+                <div class="pred-card-body">
+                    <div class="pred-inputs">
+                        <div class="pred-input-group">
+                            <label>Hour</label>
+                            <select class="pred-select" id="hour-fullArea"></select>
+                        </div>
+                        <div class="pred-input-group">
+                            <label>Minute</label>
+                            <select class="pred-select" id="minute-fullArea">
+                                <option value="">--</option>
+                                <option value="0">00</option>
+                                <option value="30">30</option>
+                            </select>
+                        </div>
+                        <button class="pred-btn" onclick="runPrediction('fullArea')">Predict</button>
+                    </div>
+                    <div class="pred-result" id="result-fullArea" style="display:none;">
+                        <div class="pred-result-slot" id="slot-fullArea">--</div>
+                        <div>
+                            <span class="pred-result-value" id="value-fullArea">--</span>
+                            <span class="pred-result-unit">W</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="pred-chart-card">
+                <div class="pred-chart-header">
+                    <span class="pred-chart-icon">📊</span>
+                    <span class="pred-chart-title">24-Hour Power Prediction</span>
+                    <span class="pred-chart-badge" id="badge-fullArea">--</span>
+                </div>
+                <div class="pred-chart-body">
+                    <canvas id="chart-fullArea"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== ROW 2: AREA 1 ===== -->
+        <div class="pred-row" data-sensor="area1">
+            <div class="pred-card area1-border">
+                <div class="pred-card-header">
+                    <span class="pred-card-icon">🔌</span>
+                    <span class="pred-card-name">Area 1</span>
+                </div>
+                <div class="pred-card-body">
+                    <div class="pred-inputs">
+                        <div class="pred-input-group">
+                            <label>Hour</label>
+                            <select class="pred-select" id="hour-area1"></select>
+                        </div>
+                        <div class="pred-input-group">
+                            <label>Minute</label>
+                            <select class="pred-select" id="minute-area1">
+                                <option value="">--</option>
+                                <option value="0">00</option>
+                                <option value="30">30</option>
+                            </select>
+                        </div>
+                        <button class="pred-btn" onclick="runPrediction('area1')">Predict</button>
+                    </div>
+                    <div class="pred-result" id="result-area1" style="display:none;">
+                        <div class="pred-result-slot" id="slot-area1">--</div>
+                        <div>
+                            <span class="pred-result-value" id="value-area1">--</span>
+                            <span class="pred-result-unit">W</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="pred-chart-card area1-border">
+                <div class="pred-chart-header">
+                    <span class="pred-chart-icon">📊</span>
+                    <span class="pred-chart-title">24-Hour Power Prediction</span>
+                    <span class="pred-chart-badge" id="badge-area1">--</span>
+                </div>
+                <div class="pred-chart-body">
+                    <canvas id="chart-area1"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== ROW 3: AREA 2 ===== -->
+        <div class="pred-row" data-sensor="area2">
+            <div class="pred-card area2-border">
+                <div class="pred-card-header">
+                    <span class="pred-card-icon">🔌</span>
+                    <span class="pred-card-name">Area 2</span>
+                </div>
+                <div class="pred-card-body">
+                    <div class="pred-inputs">
+                        <div class="pred-input-group">
+                            <label>Hour</label>
+                            <select class="pred-select" id="hour-area2"></select>
+                        </div>
+                        <div class="pred-input-group">
+                            <label>Minute</label>
+                            <select class="pred-select" id="minute-area2">
+                                <option value="">--</option>
+                                <option value="0">00</option>
+                                <option value="30">30</option>
+                            </select>
+                        </div>
+                        <button class="pred-btn" onclick="runPrediction('area2')">Predict</button>
+                    </div>
+                    <div class="pred-result" id="result-area2" style="display:none;">
+                        <div class="pred-result-slot" id="slot-area2">--</div>
+                        <div>
+                            <span class="pred-result-value" id="value-area2">--</span>
+                            <span class="pred-result-unit">W</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="pred-chart-card area2-border">
+                <div class="pred-chart-header">
+                    <span class="pred-chart-icon">📊</span>
+                    <span class="pred-chart-title">24-Hour Power Prediction</span>
+                    <span class="pred-chart-badge" id="badge-area2">--</span>
+                </div>
+                <div class="pred-chart-body">
+                    <canvas id="chart-area2"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== ROW 4: AREA 3 ===== -->
+        <div class="pred-row" data-sensor="area3">
+            <div class="pred-card area3-border">
+                <div class="pred-card-header">
+                    <span class="pred-card-icon">🔌</span>
+                    <span class="pred-card-name">Area 3</span>
+                </div>
+                <div class="pred-card-body">
+                    <div class="pred-inputs">
+                        <div class="pred-input-group">
+                            <label>Hour</label>
+                            <select class="pred-select" id="hour-area3"></select>
+                        </div>
+                        <div class="pred-input-group">
+                            <label>Minute</label>
+                            <select class="pred-select" id="minute-area3">
+                                <option value="">--</option>
+                                <option value="0">00</option>
+                                <option value="30">30</option>
+                            </select>
+                        </div>
+                        <button class="pred-btn" onclick="runPrediction('area3')">Predict</button>
+                    </div>
+                    <div class="pred-result" id="result-area3" style="display:none;">
+                        <div class="pred-result-slot" id="slot-area3">--</div>
+                        <div>
+                            <span class="pred-result-value" id="value-area3">--</span>
+                            <span class="pred-result-unit">W</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="pred-chart-card area3-border">
+                <div class="pred-chart-header">
+                    <span class="pred-chart-icon">📊</span>
+                    <span class="pred-chart-title">24-Hour Power Prediction</span>
+                    <span class="pred-chart-badge" id="badge-area3">--</span>
+                </div>
+                <div class="pred-chart-body">
+                    <canvas id="chart-area3"></canvas>
+                </div>
+            </div>
+        </div>
+    </main>
+    <!-- ============================================================ -->
+    <!-- MODEL INFO MODAL                                             -->
+    <!-- ============================================================ -->
+
+    <div class="modal-overlay" id="modelInfoModal" onclick="closeModelInfoModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <div class="modal-title">
+                    <span class="modal-icon">📊</span>
+                    <div>
+                        <h2>Model Information</h2>
+                        <p id="modalSubtitle">Random Forest Regressor — All Sensors</p>
+                    </div>
+                </div>
+                <button class="modal-close-btn" onclick="closeModelInfoModal()" aria-label="Close">
+                    ✕
+                </button>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="modal-body" id="modalBody">
+                <div class="modal-loading">⏳ Loading model info...</div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="modal-footer">
+                <span class="modal-footer-info">AI-Driven Smart Microgrid • v2.0</span>
+                <button class="modal-ok-btn" onclick="closeModelInfoModal()">Close</button>
+            </div>
+
+        </div>
+    </div>
+    <script>
+        // =============================================
+        // ==========*****JS For NavBar******===========
+        // =============================================
+        // ============================================================
+        // NAVBAR BEHAVIOR JS — MUST ADD THIS
+        // ============================================================
+
+        // Toggle hamburger menu open/close
+        function toggleNavMenu() {
+            const menu = document.getElementById('navMenu');
+            const btn = document.getElementById('hamburgerBtn');
+            const overlay = document.getElementById('navOverlay');
+
+            const isOpen = menu.classList.contains('open');
+
+            if (isOpen) {
+                closeNavMenu();
+            } else {
+                menu.classList.add('open');
+                btn.classList.add('active');
+                overlay.classList.add('show');
+            }
+        }
+
+        // Close the menu
+        function closeNavMenu() {
+            document.getElementById('navMenu').classList.remove('open');
+            document.getElementById('hamburgerBtn').classList.remove('active');
+            document.getElementById('navOverlay').classList.remove('show');
+        }
+
+        // Close menu when pressing ESC key
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') closeNavMenu();
+        });
+
+        // Auto-highlight the current page
+        document.addEventListener('DOMContentLoaded', function () {
+            const path = window.location.pathname;
+            const page = path.split('/').pop() || 'index.html';
+
+            let activeKey = 'index';
+            if (page.includes('powerControl')) activeKey = 'power';
+            else if (page.includes('energyCost')) activeKey = 'energy';
+
+            document.querySelectorAll('.nav-item').forEach(item => {
+                if (item.dataset.page === activeKey) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+        });
+
+
+        // ============================================================
+        // PAGE 2: POWER PREDICTION JS
+        // ============================================================
+
+        const DB_URL = "https://firstesp32project-7b0e1-default-rtdb.asia-southeast1.firebasedatabase.app";
+        const SENSORS = ['fullArea', 'area1', 'area2', 'area3'];
+        const sensorCharts = {};
+
+        // ============================================================
+        // POPULATE HOUR DROPDOWNS
+        // ============================================================
+        function populateHourDropdowns() {
+            SENSORS.forEach(sensor => {
+                const sel = document.getElementById(`hour-${sensor}`);
+                if (!sel) return;
+                sel.innerHTML = '<option value="">--</option>';
+                for (let h = 0; h < 24; h++) {
+                    const opt = document.createElement('option');
+                    opt.value = h;
+                    opt.textContent = String(h).padStart(2, '0');
+                    sel.appendChild(opt);
+                }
+            });
+        }
+
+
+        // ============================================================
+        // RUN PREDICTION FOR ONE SENSOR
+        // ============================================================
+        async function runPrediction(sensor) {
+            const hour = document.getElementById(`hour-${sensor}`).value;
+            const minute = document.getElementById(`minute-${sensor}`).value;
+            const resultBox = document.getElementById(`result-${sensor}`);
+
+            if (hour === '' || minute === '') {
+                alert('Please select both hour and minute.');
+                return;
+            }
+
+            const slotKey = String(hour).padStart(2, '0') + String(minute).padStart(2, '0');
+
+            try {
+                const resp = await fetch(`${DB_URL}/predictions/power/${sensor}/${slotKey}.json`);
+                if (!resp.ok) throw new Error('HTTP ' + resp.status);
+                const data = await resp.json();
+
+                if (!data) {
+                    alert(`No prediction for ${sensor} at ${slotKey}`);
+                    return;
+                }
+
+                document.getElementById(`slot-${sensor}`).textContent = data.slot_display;
+                document.getElementById(`value-${sensor}`).textContent = data.predicted_power.toFixed(2);
+                resultBox.style.display = 'block';
+            } catch (e) {
+                console.error(`Prediction error (${sensor}):`, e);
+                alert('Failed to fetch prediction.');
+            }
+        }
+
+        // ============================================================
+        // DRAW 48-SLOT CHART FOR ONE SENSOR
+        // ============================================================
+        async function drawSensorChart(sensor) {
+            try {
+                const resp = await fetch(`${DB_URL}/predictions/power/${sensor}.json`);
+                if (!resp.ok) throw new Error('HTTP ' + resp.status);
+                const raw = await resp.json();
+                if (!raw) return;
+
+                // Sort by slot_index
+                const sorted = Object.values(raw).sort((a, b) => a.slot_index - b.slot_index);
+                const labels = sorted.map(d => d.slot_display.split(' - ')[0]);
+                const values = sorted.map(d => parseFloat(d.predicted_power));
+
+                const peak = values.length ? Math.max(...values) : 0;
+                const avg = values.length ? values.reduce((a, b) => a + b, 0) / values.length : 0;
+                const totalKWh = values.reduce((a, b) => a + b, 0) * 0.5 / 1000;
+
+                document.getElementById(`badge-${sensor}`).textContent =
+                    `Peak ${peak.toFixed(0)}W | Avg ${avg.toFixed(0)}W | ${totalKWh.toFixed(2)}kWh`;
+
+                // Update last update time from data
+                if (sorted[0].updated_at) {
+                    document.getElementById('lastUpdate').textContent =
+                        'Last update: ' + new Date(sorted[0].updated_at).toLocaleString();
+                }
+
+                if (sensorCharts[sensor]) sensorCharts[sensor].destroy();
+
+                const ctx = document.getElementById(`chart-${sensor}`).getContext('2d');
+
+                // Color per sensor
+                const colors = {
+                    fullArea: '#1a237e',
+                    area1: '#e53935',
+                    area2: '#43a047',
+                    area3: '#fb8c00'
+                };
+
+                sensorCharts[sensor] = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            data: values,
+                            backgroundColor: colors[sensor],
+                            borderRadius: 4,
+                            barPercentage: 0.85,
+                            categoryPercentage: 0.9,
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        animation: { duration: 600 },
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                backgroundColor: 'rgba(26, 35, 126, 0.95)',
+                                titleColor: 'white',
+                                bodyColor: 'white',
+                                padding: 10,
+                                cornerRadius: 8,
+                                displayColors: false,
+                                callbacks: {
+                                    title: c => sorted[c[0].dataIndex].slot_display,
+                                    label: c => `⚡ ${c.parsed.y.toFixed(2)} W`
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: { display: false },
+                                ticks: {
+                                    color: '#546e7a',
+                                    font: { size: 9, weight: '500' },
+                                    maxRotation: 45,
+                                    minRotation: 45,
+                                    autoSkip: true,
+                                    maxTicksLimit: 12,
+                                }
+                            },
+                            y: {
+                                beginAtZero: true,
+                                grid: { color: 'rgba(0, 0, 0, 0.05)' },
+                                ticks: {
+                                    color: '#546e7a',
+                                    font: { size: 10, weight: '500' },
+                                    callback: v => v + ' W'
+                                }
+                            }
+                        }
+                    }
+                });
+            } catch (e) {
+                console.error(`Chart error (${sensor}):`, e);
+            }
+        }
+
+        // ============================================================
+        // MODEL INFO MODAL JS start
+        // ============================================================
+
+        // ===== OPEN MODAL =====
+        async function openModelInfoModal() {
+            const modal = document.getElementById('modelInfoModal');
+            const body = document.getElementById('modalBody');
+            const subtitle = document.getElementById('modalSubtitle');
+
+            // Show modal with loading
+            modal.classList.add('open');
+            document.body.style.overflow = 'hidden';   // Prevent background scroll
+            body.innerHTML = '<div class="modal-loading">⏳ Loading model info...</div>';
+
+            try {
+                // Fetch model info for all 4 sensors in parallel
+                const [infoFull, infoArea1, infoArea2, infoArea3] = await Promise.all([
+                    fetch(`${DB_URL}/predictions/model_info/power/fullArea.json`).then(r => r.ok ? r.json() : null),
+                    fetch(`${DB_URL}/predictions/model_info/power/area1.json`).then(r => r.ok ? r.json() : null),
+                    fetch(`${DB_URL}/predictions/model_info/power/area2.json`).then(r => r.ok ? r.json() : null),
+                    fetch(`${DB_URL}/predictions/model_info/power/area3.json`).then(r => r.ok ? r.json() : null)
+                ]);
+
+                const sensors = [
+                    { name: 'fullArea', icon: '🏠', label: 'Full Area', cls: '', info: infoFull },
+                    { name: 'area1', icon: '🔌', label: 'Area 1', cls: 'area1', info: infoArea1 },
+                    { name: 'area2', icon: '🔌', label: 'Area 2', cls: 'area2', info: infoArea2 },
+                    { name: 'area3', icon: '🔌', label: 'Area 3', cls: 'area3', info: infoArea3 }
+                ];
+
+                // Update subtitle
+                subtitle.textContent = sensors[0]?.info?.model_type
+                    ? `${sensors[0].info.model_type} • All Sensors`
+                    : 'Model Information';
+
+                // Build HTML
+                let html = '<div class="sensor-info-grid">';
+                for (const s of sensors) {
+                    html += renderSensorInfoCard(s);
+                }
+                html += '</div>';
+
+                body.innerHTML = html;
+
+            } catch (err) {
+                console.error('Modal load error:', err);
+                body.innerHTML = '<div class="modal-loading">❌ Failed to load model info</div>';
+            }
+        }
+
+        // ===== RENDER ONE SENSOR CARD =====
+        function renderSensorInfoCard(s) {
+            const info = s.info || {};
+
+            const maeStr = info.mae !== undefined && info.mae !== null
+                ? info.mae.toFixed(2) + ' W'
+                : '--';
+
+            const r2Str = info.r2_score !== undefined && info.r2_score !== null
+                ? info.r2_score.toFixed(4)
+                : '--';
+
+            const trainedStr = info.last_trained
+                ? new Date(info.last_trained).toLocaleString()
+                : '--';
+
+            return `
+        <div class="sensor-info-card ${s.cls}">
+            <div class="sensor-info-header">
+                <span class="sensor-info-icon">${s.icon}</span>
+                <span>${s.label}</span>
+                <span class="sensor-info-badge">${info.model_version || 'v2.0'}</span>
+            </div>
+            <div class="sensor-info-body">
+                <div class="sensor-info-row">
+                    <span class="label">Model Type</span>
+                    <span class="value">${info.model_type || '--'}</span>
+                </div>
+                <div class="sensor-info-row">
+                    <span class="label">Target</span>
+                    <span class="value">${info.target || '--'}</span>
+                </div>
+                <div class="sensor-info-row">
+                    <span class="label">MAE</span>
+                    <span class="value highlight">${maeStr}</span>
+                </div>
+                <div class="sensor-info-row">
+                    <span class="label">R² Score</span>
+                    <span class="value">${r2Str}</span>
+                </div>
+                <div class="sensor-info-row">
+                    <span class="label">Training Samples</span>
+                    <span class="value">${info.training_samples || '--'}</span>
+                </div>
+                <div class="sensor-info-row">
+                    <span class="label">Slots per Day</span>
+                    <span class="value">${info.slots_per_day || '--'}</span>
+                </div>
+                <div class="sensor-info-row">
+                    <span class="label">Last Trained</span>
+                    <span class="value">${trainedStr}</span>
+                </div>
+            </div>
+        </div>
+    `;
+        }
+
+        // ===== CLOSE MODAL =====
+        function closeModelInfoModal(event) {
+            // If called from overlay click, only close if clicking on overlay itself
+            if (event && event.target !== event.currentTarget) return;
+
+            const modal = document.getElementById('modelInfoModal');
+            modal.classList.remove('open');
+            document.body.style.overflow = '';   // Restore scroll
+        }
+
+        // ===== CLOSE ON ESCAPE KEY =====
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const modal = document.getElementById('modelInfoModal');
+                if (modal && modal.classList.contains('open')) {
+                    closeModelInfoModal();
+                }
+            }
+        });
+
+        // Model Info Modal JS End
+
+        // ============================================================
+        // INITIAL LOAD
+        // ============================================================
+        document.addEventListener('DOMContentLoaded', async () => {
+            populateHourDropdowns();
+
+            // Mark navbar active page
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.toggle('active', item.dataset.page === 'power');
+            });
+
+            // Draw all charts
+            for (const s of SENSORS) {
+                await drawSensorChart(s);
+            }
+        });
+    </script>
+</body>
+
+</html>
