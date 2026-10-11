@@ -347,6 +347,7 @@
      /* Keep last update VISIBLE on mobile */
      .last-update {
          display: inline;
+         font-size: 10px;
      }
 
      .nav-menu {
@@ -1241,7 +1242,7 @@
 
  @media (max-width: 480px) {
      .btn-text {
-         display: none;
+         display: block;
          /* Show only icon on tiny screens */
      }
 
