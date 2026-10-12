@@ -7,6 +7,79 @@
     <title>Power Prediction & Control | AI-Driven Smart Microgrid</title>
     <link rel="stylesheet" href="styles/style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+    <style>
+        /* ===== All Schedules List ===== */
+        .gen-all-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            background: #fafbfc;
+            border-radius: 8px;
+            font-size: 12px;
+            border-left: 3px solid #90a4ae;
+            transition: all 0.2s ease;
+        }
+
+        .gen-all-item.active {
+            background: linear-gradient(90deg, #e8f5e9, #f1f8e9);
+            border-left-color: #4caf50;
+            box-shadow: 0 2px 6px rgba(76, 175, 80, 0.15);
+        }
+
+        .gen-all-time {
+            color: #546e7a;
+            font-weight: 600;
+        }
+
+        .gen-all-val {
+            color: #263238;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .gen-badge {
+            font-size: 10px;
+            font-weight: 700;
+            color: #2e7d32;
+            background: #e8f5e9;
+            padding: 2px 8px;
+            border-radius: 10px;
+            letter-spacing: 0.5px;
+        }
+
+        /* Generation schedule clear btn style */
+        .gen-clear-btn {
+            padding: 10px 20px;
+            font-size: 13px;
+            font-weight: 700;
+            color: #c62828;
+            background: #ffebee;
+            border: 2px solid #ef9a9a;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+            margin-top: 4px;
+            width: 100%;
+        }
+
+        .gen-clear-btn:hover {
+            background: #ffcdd2;
+            border-color: #e53935;
+        }
+
+        /* My own written design card-header mother for button inside card */
+        /* .gen-card-header-parent {
+            display: flex;
+            justify-content: space-between;
+            justify-items: center;
+            background: linear-gradient(135deg, #e65100, #f9a825);
+        } */
+    </style>
 </head>
 
 <body class="">
@@ -81,6 +154,101 @@
                 <span>📊</span>
                 <span class="btn-text">Model Info</span>
             </button>
+        </div>
+
+        <!-- Inteligent control generation card  -->
+
+        <!-- ============================================================ -->
+        <!-- GENERATION SCHEDULE CARD                                     -->
+        <!-- ============================================================ -->
+
+        <div class="generation-section" style="margin-bottom: 54px;">
+
+            <!-- ===== SET SCHEDULE CARD ===== -->
+            <div class="gen-card">
+                <div class="gen-card-header">
+                    <span class="gen-icon">⚡</span>
+                    <span class="gen-title">Power Generation Schedule</span>
+                </div>
+
+                <div class="gen-card-body">
+
+                    <!-- Time Range Row -->
+                    <div class="gen-row">
+                        <div class="gen-time-group">
+                            <label>Start Time</label>
+                            <div class="gen-time-inputs">
+                                <select class="gen-select" id="genStartHour">
+                                    <option value="">HH</option>
+                                </select>
+                                <span class="gen-sep">:</span>
+                                <select class="gen-select" id="genStartMinute">
+                                    <option value="">MM</option>
+                                    <option value="0">00</option>
+                                    <option value="30">30</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="gen-arrow">→</div>
+
+                        <div class="gen-time-group">
+                            <label>End Time</label>
+                            <div class="gen-time-inputs">
+                                <select class="gen-select" id="genEndHour">
+                                    <option value="">HH</option>
+                                </select>
+                                <span class="gen-sep">:</span>
+                                <select class="gen-select" id="genEndMinute">
+                                    <option value="">MM</option>
+                                    <option value="0">00</option>
+                                    <option value="30">30</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Generation Value Row -->
+                    <div class="gen-row gen-value-row">
+                        <div class="gen-input-group">
+                            <label>Generation Amount (W)</label>
+                            <input type="text" class="gen-text-input" id="genValue" placeholder="e.g., 420"
+                                inputmode="decimal" autocomplete="off">
+                        </div>
+                        <button class="gen-apply-btn" onclick="applyGenerationSchedule()">
+                            ⚡ Apply Schedule
+                        </button>
+                    </div>
+
+                    <div class="gen-hint">
+                        💡 Set a generation value for any time range. If no schedule covers the current time, the system
+                        enters BlackOut (0W).
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== CURRENT STATUS CARD ===== -->
+            <div class="gen-card gen-status-card">
+                <div class="gen-card-header">
+                    <div>
+                        <span class="gen-icon">📊</span>
+                        <span class="gen-title">Current Generation Status</span>
+                    </div>
+                    <div>
+                        <!-- Add inside the generation card, below the Apply button -->
+                        <button class="gen-clear-btn" onclick="clearAllSchedules()">
+                            🗑️ Clear All Schedules
+                        </button>
+                    </div>
+                </div>
+
+                <div class="gen-card-body">
+                    <div id="currentGenStatus" class="gen-status-body">
+                        <div class="gen-loading">⏳ Loading status...</div>
+                    </div>
+                </div>
+            </div>
+
         </div>
 
         <!-- ===== ROW 1: FULL AREA ===== -->
@@ -293,7 +461,36 @@
 
         </div>
     </div>
+
     <script>
+
+        // ============================================================
+        // TOAST NOTIFICATION (SAFE FALLBACK)
+        // ============================================================
+        let _toastTimer;
+        function showToast(message, type = 'info') {
+            // Create toast element if not exists
+            let toast = document.getElementById('toast');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'toast';
+                toast.className = 'toast';
+                document.body.appendChild(toast);
+            }
+
+            toast.textContent = message;
+            toast.className = 'toast ' + type;
+
+            // Force reflow to restart animation
+            void toast.offsetWidth;
+            toast.classList.add('show');
+
+            clearTimeout(_toastTimer);
+            _toastTimer = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
         // =============================================
         // ==========*****JS For NavBar******===========
         // =============================================
@@ -655,6 +852,335 @@
                 await drawSensorChart(s);
             }
         });
+
+        // ============================================================
+        // GENERATION SCHEDULE — STEP 1
+        // ============================================================
+
+        // ===== POPULATE TIME DROPDOWNS =====
+        function populateGenerationTimeDropdowns() {
+            // Hour dropdowns
+            ['genStartHour', 'genEndHour'].forEach(id => {
+                const sel = document.getElementById(id);
+                if (!sel) return;
+                sel.innerHTML = '<option value="">HH</option>';
+                for (let h = 0; h < 24; h++) {
+                    const opt = document.createElement('option');
+                    opt.value = h;
+                    opt.textContent = String(h).padStart(2, '0');
+                    sel.appendChild(opt);
+                }
+            });
+
+            // Minute dropdowns already have 00/30 in HTML
+        }
+
+        // ===== CONVERT TIME TO SLOT INDEX (0-47) =====
+        function timeToSlot(hour, minute) {
+            return parseInt(hour) * 2 + (parseInt(minute) === 30 ? 1 : 0);
+        }
+
+        // ===== CONVERT SLOT INDEX TO DISPLAY TIME =====
+        function slotToTime(slot) {
+            if (slot === 48) return '24:00';
+            const h = Math.floor(slot / 2);
+            const m = (slot % 2) * 30;
+            return String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0');
+        }
+
+        // ===== VALIDATE GENERATION VALUE =====
+        function validateGenValue() {
+            const input = document.getElementById('genValue');
+            const raw = input.value.trim();
+
+            if (raw === '') {
+                input.classList.add('error');
+                showToast('❌ Invalid Generation Amount', 'error');
+                setTimeout(() => input.classList.remove('error'), 1500);
+                return null;
+            }
+
+            const val = parseFloat(raw);
+
+            if (isNaN(val)) {
+                input.classList.add('error');
+                showToast('❌ Invalid Generation Amount', 'error');
+                setTimeout(() => input.classList.remove('error'), 1500);
+                return null;
+            }
+
+            if (val < 0) {
+                input.classList.add('error');
+                showToast('❌ Generation cannot be negative', 'error');
+                setTimeout(() => input.classList.remove('error'), 1500);
+                return null;
+            }
+
+            input.classList.remove('error');
+            return val;
+        }
+
+        // ===== APPLY SCHEDULE =====
+        // ===== APPLY SCHEDULE =====
+        async function applyGenerationSchedule() {
+            const sh = document.getElementById('genStartHour').value;
+            const sm = document.getElementById('genStartMinute').value;
+            const eh = document.getElementById('genEndHour').value;
+            const em = document.getElementById('genEndMinute').value;
+
+            // ---- Validate times ----
+            if (sh === '' || sm === '' || eh === '' || em === '') {
+                showToast('❌ Please select both start and end time', 'error');
+                return;
+            }
+
+            const startSlot = timeToSlot(sh, sm);
+            let endSlot = timeToSlot(eh, em);
+            const startTime = String(sh).padStart(2, '0') + ':' + String(sm).padStart(2, '0');
+            const endTime = String(eh).padStart(2, '0') + ':' + String(em).padStart(2, '0');
+
+            // Special case: end = 00:00 → end of day (slot 48)
+            if (endSlot === 0) endSlot = 48;
+
+            // Validate: end must be after start
+            if (endSlot <= startSlot) {
+                showToast('❌ End time must be after start time', 'error');
+                return;
+            }
+
+            // ---- Validate generation value ----
+            const val = validateGenValue();
+            if (val === null) return;
+
+            // ---- Save to Firebase ----
+            const scheduleKey = String(sh).padStart(2, '0')
+                + String(sm).padStart(2, '0')
+                + '-'
+                + String(eh).padStart(2, '0')
+                + String(em).padStart(2, '0');
+
+            try {
+                const resp = await fetch(`${DB_URL}/control/generation/schedule/${scheduleKey}.json`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        start_time: startTime,
+                        end_time: endTime,
+                        start_slot: startSlot,
+                        end_slot: endSlot,
+                        value: val,
+                        set_at: new Date().toISOString()
+                    })
+                });
+
+                if (!resp.ok) throw new Error('HTTP ' + resp.status);
+
+                showToast(`✅ Schedule set: ${startTime} → ${endTime} @ ${val}W`, 'success');
+
+                // ================================================================
+                // 👇👇👇 HERE IS WHERE TO ADD IT 👇👇👇
+                // ================================================================
+
+                // Clear form
+                document.getElementById('genStartHour').value = '';
+                document.getElementById('genStartMinute').value = '';
+                document.getElementById('genEndHour').value = '';
+                document.getElementById('genEndMinute').value = '';
+                document.getElementById('genValue').value = '';
+
+                // ✅ Refresh status with 300ms delay (lets Firebase propagate)
+                setTimeout(loadCurrentGenerationStatus, 300);
+
+                // ================================================================
+                // ☝️☝️☝️ END OF CHANGE ☝️☝️☝️
+                // ================================================================
+
+            } catch (err) {
+                console.error('Apply schedule error:', err);
+                showToast('❌ Failed to save schedule', 'error');
+            }
+        }
+
+        // ===== LOAD & DISPLAY CURRENT STATUS =====
+        // ============================================================
+        // LOAD & DISPLAY CURRENT STATUS (with overlap priority)
+        // ============================================================
+        async function loadCurrentGenerationStatus() {
+            const container = document.getElementById('currentGenStatus');
+            if (!container) return;
+
+            try {
+                const resp = await fetch(`${DB_URL}/control/generation/schedule.json`);
+                const data = resp.ok ? await resp.json() : null;
+
+                if (!data) {
+                    container.innerHTML = renderBlackOut();
+                    return;
+                }
+
+                // Convert to array
+                const schedules = Object.entries(data).map(([key, sched]) => ({
+                    key,
+                    ...sched
+                }));
+
+                // ✅ SORT BY set_at DESC → LATEST SCHEDULE FIRST
+                // This ensures latest-applied wins when overlaps occur
+                const sortedSchedules = schedules.sort((a, b) => {
+                    const tA = new Date(a.set_at || 0).getTime();
+                    const tB = new Date(b.set_at || 0).getTime();
+                    return tB - tA;   // descending (newest first)
+                });
+
+                // Current time slot
+                const now = new Date();
+                const currentSlot = now.getHours() * 2 + (now.getMinutes() < 30 ? 0 : 1);
+
+                // ✅ FIND ACTIVE — first match in the SORTED list wins
+                //    (because latest set_at is at the front of the array)
+                const active = sortedSchedules.find(s =>
+                    currentSlot >= s.start_slot && currentSlot < s.end_slot
+                );
+
+                // Find upcoming schedules (not currently active, start in future)
+                const upcoming = sortedSchedules
+                    .filter(s => s.start_slot > currentSlot)
+                    .sort((a, b) => a.start_slot - b.start_slot)
+                    .slice(0, 5);
+
+                // Show all schedules in the card (for visibility)
+                const allSorted = schedules.sort((a, b) => a.start_slot - b.start_slot);
+
+                // Build HTML
+                let html = '';
+
+                if (active) {
+                    html += renderActiveSchedule(active);
+                } else {
+                    html += renderBlackOut();
+                }
+
+                // Show all schedules (so user can see what's set)
+                if (allSorted.length > 0) {
+                    html += renderAllSchedules(allSorted, active);
+                }
+
+                container.innerHTML = html;
+
+            } catch (err) {
+                console.error('Status load error:', err);
+                container.innerHTML = '<div class="gen-loading">❌ Failed to load status</div>';
+            }
+        }
+
+        // ===== RENDER ALL SCHEDULES LIST =====
+        function renderAllSchedules(list, activeSchedule) {
+            const items = list.map(s => {
+                const isActive = activeSchedule && s.key === activeSchedule.key;
+                const cls = isActive ? 'gen-all-item active' : 'gen-all-item';
+                const badge = isActive ? '<span class="gen-badge">● ACTIVE</span>' : '';
+
+                return `
+            <div class="${cls}">
+                <div class="gen-all-time">${s.start_time} → ${s.end_time}</div>
+                <div class="gen-all-val">${s.value} W ${badge}</div>
+            </div>
+        `;
+            }).join('');
+
+            return `
+        <div class="gen-upcoming">
+            <div class="gen-upcoming-title">📋 All Schedules (${list.length})</div>
+            <div class="gen-upcoming-list">${items}</div>
+        </div>
+    `;
+        }
+
+        // ===== RENDER HELPERS =====
+        function renderActiveSchedule(sched) {
+            return `
+        <div class="gen-active">
+            <div class="gen-active-badge">
+                <span class="dot"></span>
+                <span>ACTIVE NOW</span>
+            </div>
+            <div class="gen-active-info">
+                <div class="gen-active-row big">
+                    <span class="label">Generation</span>
+                    <span class="value">${sched.value} W</span>
+                </div>
+                <div class="gen-active-row">
+                    <span class="label">Time Range</span>
+                    <span class="value">${sched.start_time} → ${sched.end_time}</span>
+                </div>
+            </div>
+        </div>
+    `;
+        }
+
+        function renderBlackOut() {
+            return `
+        <div class="gen-blackout">
+            <div class="gen-blackout-icon">⛔</div>
+            <div class="gen-blackout-title">BLACKOUT CONDITION</div>
+            <div class="gen-blackout-sub">No active schedule — 0 W Generation</div>
+        </div>
+    `;
+        }
+
+        function renderUpcomingSchedules(list) {
+            const items = list.map(s => `
+        <div class="gen-upcoming-item">
+            <span class="time">${s.start_time} → ${s.end_time}</span>
+            <span class="val">${s.value} W</span>
+        </div>
+    `).join('');
+
+            return `
+        <div class="gen-upcoming">
+            <div class="gen-upcoming-title">📅 Upcoming Schedules</div>
+            <div class="gen-upcoming-list">${items}</div>
+        </div>
+    `;
+        }
+
+        // ============================================================
+        // INITIALIZE
+        // ============================================================
+        document.addEventListener('DOMContentLoaded', () => {
+            populateGenerationTimeDropdowns();
+            loadCurrentGenerationStatus();
+        });
+
+        // ✅ AUTO-REFRESH STATUS EVERY 5 SECONDS (was 30s)
+        setInterval(loadCurrentGenerationStatus, 5000);
+        // Generation card JS end//
+
+        // Clearing schedule js//
+        // ============================================================
+        // CLEAR ALL SCHEDULES
+        // ============================================================
+        async function clearAllSchedules() {
+            if (!confirm('⚠️ Delete ALL schedules? This cannot be undone!')) {
+                return;
+            }
+
+            try {
+                const resp = await fetch(`${DB_URL}/control/generation/schedule.json`, {
+                    method: 'DELETE'
+                });
+
+                if (resp.ok) {
+                    showToast('✅ All schedules cleared', 'success');
+                    loadCurrentGenerationStatus();
+                } else {
+                    throw new Error('HTTP ' + resp.status);
+                }
+            } catch (err) {
+                console.error('Clear schedules error:', err);
+                showToast('❌ Failed to clear schedules', 'error');
+            }
+        }
     </script>
 </body>
 
