@@ -72,13 +72,267 @@
             border-color: #e53935;
         }
 
-        /* My own written design card-header mother for button inside card */
-        /* .gen-card-header-parent {
+        /* ============================================================ */
+        /* AI DECISION CARD                                             */
+        /* ============================================================ */
+
+        .ai-decision-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            padding: 20px;
+            margin-bottom: 24px;
+            border-top: 4px solid #1a237e;
+            transition: all 0.3s ease;
+        }
+
+        .ai-loading {
+            text-align: center;
+            padding: 30px;
+            color: #90a4ae;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .ai-error {
+            text-align: center;
+            padding: 30px;
+            color: #c62828;
+            font-size: 14px;
+            font-weight: 600;
+            background: #ffebee;
+            border-radius: 10px;
+        }
+
+        /* ===== Header ===== */
+        .ai-header {
             display: flex;
             justify-content: space-between;
-            justify-items: center;
-            background: linear-gradient(135deg, #e65100, #f9a825);
-        } */
+            align-items: center;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #eceff1;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .ai-header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .ai-status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #4caf50;
+            animation: pulse 2s infinite;
+        }
+
+        .ai-status-dot.warning {
+            background: #f9a825;
+            animation: none;
+        }
+
+        .ai-status-dot.danger {
+            background: #f44336;
+            animation: none;
+        }
+
+        .ai-status-text {
+            font-size: 15px;
+            font-weight: 700;
+            color: #263238;
+        }
+
+        .ai-time {
+            font-size: 13px;
+            color: #78909c;
+            font-weight: 600;
+            background: #f5f7fa;
+            padding: 4px 12px;
+            border-radius: 20px;
+        }
+
+        /* ===== Areas Grid ===== */
+        .ai-areas-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .ai-area-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 16px 12px;
+            background: #f5f7fa;
+            border-radius: 12px;
+            border-top: 4px solid #cfd8dc;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Active (green) */
+        .ai-area-item.active {
+            background: linear-gradient(135deg, #e8f5e9, #f1f8e9);
+            border-top-color: #4caf50;
+            box-shadow: 0 4px 16px rgba(76, 175, 80, 0.2);
+        }
+
+        /* Shed (red) */
+        .ai-area-item.shed {
+            background: linear-gradient(135deg, #ffebee, #ffcdd2);
+            border-top-color: #f44336;
+            box-shadow: 0 4px 16px rgba(244, 67, 54, 0.2);
+            animation: shedPulse 1.5s infinite;
+        }
+
+        @keyframes shedPulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.02);
+            }
+        }
+
+        .ai-area-icon {
+            font-size: 26px;
+            margin-bottom: 6px;
+        }
+
+        .ai-area-name {
+            font-size: 13px;
+            font-weight: 700;
+            color: #37474f;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .ai-area-state {
+            font-size: 14px;
+            font-weight: 800;
+            padding: 4px 14px;
+            border-radius: 20px;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+
+        .ai-area-item.active .ai-area-state {
+            background: #4caf50;
+            color: white;
+        }
+
+        .ai-area-item.shed .ai-area-state {
+            background: #f44336;
+            color: white;
+        }
+
+        .ai-area-pred {
+            font-size: 12px;
+            color: #546e7a;
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* ===== Stats Grid ===== */
+        .ai-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            padding-top: 16px;
+            border-top: 2px solid #eceff1;
+        }
+
+        .ai-stat {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            padding: 10px 14px;
+            background: #fafbfc;
+            border-radius: 10px;
+            border-left: 3px solid #1a237e;
+        }
+
+        .ai-stat.highlight {
+            background: linear-gradient(135deg, #e8f5e9, #f1f8e9);
+            border-left-color: #4caf50;
+        }
+
+        .ai-stat-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            color: #78909c;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .ai-stat-value {
+            font-size: 18px;
+            font-weight: 800;
+            color: #1a237e;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .ai-stat.highlight .ai-stat-value {
+            color: #2e7d32;
+        }
+
+        /* ===== Footer ===== */
+        .ai-footer {
+            margin-top: 16px;
+            padding-top: 12px;
+            border-top: 1px dashed #eceff1;
+            text-align: right;
+            font-size: 12px;
+            color: #90a4ae;
+            font-weight: 600;
+        }
+
+        /* ===== Responsive ===== */
+        @media (max-width: 600px) {
+            .ai-areas-grid {
+                grid-template-columns: 1fr 1fr 1fr;
+                gap: 8px;
+            }
+
+            .ai-area-item {
+                padding: 12px 6px;
+            }
+
+            .ai-area-icon {
+                font-size: 20px;
+            }
+
+            .ai-area-name {
+                font-size: 11px;
+            }
+
+            .ai-area-state {
+                font-size: 11px;
+                padding: 3px 10px;
+            }
+
+            .ai-area-pred {
+                font-size: 10px;
+            }
+
+            .ai-stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .ai-stat-value {
+                font-size: 15px;
+            }
+        }
     </style>
 </head>
 
@@ -162,7 +416,7 @@
         <!-- GENERATION SCHEDULE CARD                                     -->
         <!-- ============================================================ -->
 
-        <div class="generation-section" style="margin-bottom: 54px;">
+        <div class="generation-section">
 
             <!-- ===== SET SCHEDULE CARD ===== -->
             <div class="gen-card">
@@ -247,6 +501,93 @@
                         <div class="gen-loading">⏳ Loading status...</div>
                     </div>
                 </div>
+            </div>
+
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- AI DECISION STATUS CARD                                      -->
+        <!-- ============================================================ -->
+
+        <div class="section-title">🤖 AI Load Shedding Status</div>
+
+        <div class="ai-decision-card" id="aiDecisionCard" style="margin-bottom: 54px;">
+
+            <!-- Loading state -->
+            <div class="ai-loading" id="aiLoading">
+                ⏳ Loading AI decision...
+            </div>
+
+            <!-- Decision display (hidden by default) -->
+            <div class="ai-content" id="aiContent" style="display: none;">
+
+                <!-- ===== Header Row ===== -->
+                <div class="ai-header">
+                    <div class="ai-header-left">
+                        <span class="ai-status-dot" id="aiStatusDot"></span>
+                        <span class="ai-status-text" id="aiStatusText">--</span>
+                    </div>
+                    <div class="ai-header-right">
+                        <span class="ai-time" id="aiTime">--</span>
+                    </div>
+                </div>
+
+                <!-- ===== Area Status Grid ===== -->
+                <div class="ai-areas-grid" id="aiAreasGrid">
+                    <div class="ai-area-item" data-area="area1" id="aiArea1">
+                        <div class="ai-area-icon">🔌</div>
+                        <div class="ai-area-name">Area 1</div>
+                        <div class="ai-area-state" id="aiArea1State">--</div>
+                        <div class="ai-area-pred" id="aiArea1Pred">--</div>
+                    </div>
+                    <div class="ai-area-item" data-area="area2" id="aiArea2">
+                        <div class="ai-area-icon">🔌</div>
+                        <div class="ai-area-name">Area 2</div>
+                        <div class="ai-area-state" id="aiArea2State">--</div>
+                        <div class="ai-area-pred" id="aiArea2Pred">--</div>
+                    </div>
+                    <div class="ai-area-item" data-area="area3" id="aiArea3">
+                        <div class="ai-area-icon">🔌</div>
+                        <div class="ai-area-name">Area 3</div>
+                        <div class="ai-area-state" id="aiArea3State">--</div>
+                        <div class="ai-area-pred" id="aiArea3Pred">--</div>
+                    </div>
+                </div>
+
+                <!-- ===== Stats Row ===== -->
+                <div class="ai-stats-grid">
+                    <div class="ai-stat">
+                        <div class="ai-stat-label">⚡ Generation</div>
+                        <div class="ai-stat-value" id="aiGenValue">--</div>
+                    </div>
+                    <div class="ai-stat">
+                        <div class="ai-stat-label">📊 Total Demand</div>
+                        <div class="ai-stat-value" id="aiDemandValue">--</div>
+                    </div>
+                    <div class="ai-stat">
+                        <div class="ai-stat-label">🔋 Remaining Load</div>
+                        <div class="ai-stat-value" id="aiRemainingValue">--</div>
+                    </div>
+                    <div class="ai-stat">
+                        <div class="ai-stat-label">🗑️ Waste</div>
+                        <div class="ai-stat-value" id="aiWasteValue">--</div>
+                    </div>
+                    <div class="ai-stat highlight">
+                        <div class="ai-stat-label">📈 Efficiency</div>
+                        <div class="ai-stat-value" id="aiEfficiencyValue">--</div>
+                    </div>
+                </div>
+
+                <!-- ===== Footer ===== -->
+                <div class="ai-footer">
+                    <span id="aiDecisionTimestamp">--</span>
+                </div>
+
+            </div>
+
+            <!-- Error state -->
+            <div class="ai-error" id="aiError" style="display: none;">
+                ❌ Unable to load AI decision. Ensure ESP32 is running.
             </div>
 
         </div>
@@ -1181,6 +1522,137 @@
                 showToast('❌ Failed to clear schedules', 'error');
             }
         }
+
+        // ============================================================
+        // AI DECISION STATUS — Fetch & Display
+        // ============================================================
+
+        let lastDecisionData = null;
+
+        // ============================================================
+        // FETCH LAST DECISION FROM FIREBASE
+        // ============================================================
+        async function fetchAIDecision() {
+            const card = document.getElementById('aiDecisionCard');
+            const loadingEl = document.getElementById('aiLoading');
+            const contentEl = document.getElementById('aiContent');
+            const errorEl = document.getElementById('aiError');
+
+            try {
+                const resp = await fetch(`${DB_URL}/control/last_decision.json`);
+
+                if (!resp.ok) throw new Error('HTTP ' + resp.status);
+
+                const data = await resp.json();
+
+                // No decision yet
+                if (!data) {
+                    loadingEl.textContent = '⏳ Waiting for AI to make first decision...';
+                    loadingEl.style.display = 'block';
+                    contentEl.style.display = 'none';
+                    errorEl.style.display = 'none';
+                    return;
+                }
+
+                lastDecisionData = data;
+
+                // Show content
+                loadingEl.style.display = 'none';
+                errorEl.style.display = 'none';
+                contentEl.style.display = 'block';
+
+                // Render decision
+                renderAIDecision(data);
+
+            } catch (err) {
+                console.error('AI decision fetch error:', err);
+                loadingEl.style.display = 'none';
+                contentEl.style.display = 'none';
+                errorEl.style.display = 'block';
+            }
+        }
+
+        // ============================================================
+        // RENDER AI DECISION
+        // ============================================================
+        function renderAIDecision(data) {
+            // ---- Header: overall status ----
+            const shedCount = (data.area1_shed || 0) + (data.area2_shed || 0) + (data.area3_shed || 0);
+
+            const dot = document.getElementById('aiStatusDot');
+            const text = document.getElementById('aiStatusText');
+
+            if (shedCount === 0) {
+                // All active
+                dot.className = 'ai-status-dot';
+                text.textContent = '✅ All Areas Active — Generation Meets Demand';
+                text.style.color = '#2e7d32';
+            } else if (shedCount === 3) {
+                // BlackOut
+                dot.className = 'ai-status-dot danger';
+                text.textContent = '⛔ BlackOut — All Areas Shed';
+                text.style.color = '#c62828';
+            } else {
+                // Partial shedding
+                dot.className = 'ai-status-dot warning';
+                text.textContent = `⚠️ Load Shedding Active — ${shedCount} Area${shedCount > 1 ? 's' : ''} Shed`;
+                text.style.color = '#e65100';
+            }
+
+            // Update time
+            document.getElementById('aiTime').textContent = data.timestamp || '--';
+
+            // ---- Area Status ----
+            for (let i = 1; i <= 3; i++) {
+                const isShed = data[`area${i}_shed`] === 1;
+                const pred = data[`area${i}_pred`];
+                const item = document.getElementById(`aiArea${i}`);
+                const stateEl = document.getElementById(`aiArea${i}State`);
+                const predEl = document.getElementById(`aiArea${i}Pred`);
+
+                // Update class
+                item.className = 'ai-area-item ' + (isShed ? 'shed' : 'active');
+
+                // Update state text
+                stateEl.textContent = isShed ? 'SHED' : 'ACTIVE';
+
+                // Update prediction
+                predEl.textContent = (pred !== undefined && pred !== null)
+                    ? pred.toFixed(1) + ' W'
+                    : '--';
+            }
+
+            // ---- Stats ----
+            document.getElementById('aiGenValue').textContent =
+                (data.generation !== undefined) ? data.generation.toFixed(1) + ' W' : '--';
+
+            document.getElementById('aiDemandValue').textContent =
+                (data.full_area_pred !== undefined) ? data.full_area_pred.toFixed(1) + ' W' : '--';
+
+            document.getElementById('aiRemainingValue').textContent =
+                (data.remaining_load !== undefined) ? data.remaining_load.toFixed(1) + ' W' : '--';
+
+            document.getElementById('aiWasteValue').textContent =
+                (data.waste !== undefined) ? data.waste.toFixed(1) + ' W' : '--';
+
+            document.getElementById('aiEfficiencyValue').textContent =
+                (data.efficiency !== undefined) ? data.efficiency.toFixed(1) + ' %' : '--';
+
+            // ---- Footer ----
+            const ts = data.timestamp && data.date
+                ? `${data.date} at ${data.timestamp}`
+                : '--';
+            document.getElementById('aiDecisionTimestamp').textContent = `Last updated: ${ts}`;
+        }
+
+        // ============================================================
+        // AUTO-REFRESH (every 5 seconds)
+        // ============================================================
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(fetchAIDecision, 500);
+        });
+
+        setInterval(fetchAIDecision, 5000);
     </script>
 </body>
 
